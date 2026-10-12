@@ -34,7 +34,7 @@ ecosistema/
 │   │   ├── css/
 │   │   │   └── main.css          # Estilos CSS accesibles (variables, temas, alto contraste)
 │   │   └── js/
-│   │       └── main.js           # Lógica cliente (preferencias DUA, glosario, TTS)
+│   │       └── accesibilidad.js  # Lógica cliente (preferencias, glosario, anuncios)
 │   ├── templates/                # Plantillas Jinja2 semánticas
 │   │   ├── base.html             # Layout principal accesible con landmarks y skip links
 │   │   ├── inicio.html           # Página de bienvenida
@@ -52,70 +52,115 @@ ecosistema/
 │   └── routes.py                 # Rutas y controladores de la aplicación
 ├── instance/                     # Base de datos SQLite local (generada automáticamente)
 ├── requirements.txt              # Dependencias del proyecto
+├── requirements-dev.txt          # Dependencias de pruebas
+├── tests/                        # Pruebas automáticas (seguridad y datos de prueba)
+├── Dockerfile                    # Imagen para ejecutar con Docker
+├── docker-compose.yml            # Ejecución local con un comando
 ├── run.py                        # Punto de entrada para ejecución local
-├── seed.py                       # Población de base de datos con datos de prueba
+├── seed.py                       # Datos de prueba (solo si la base está vacía)
 ├── render.yaml                   # Configuración para despliegue en la nube
 └── .gitignore                    # Reglas de exclusión de Git
 ```
 
 ---
 
-## 🚀 Guía de Instalación y Ejecución Local
+## 🚀 Cómo ejecutar el prototipo
 
-### 1. Clonar o descargar el repositorio
+Repositorio: <https://github.com/carevalomx69/EcosistemaDigitalnclusivoUAA>
+
+### Opción A. Con Docker (recomendada para revisar avances)
+
+Requiere Docker Desktop (o Docker Engine con Compose).
+
 ```bash
-git clone https://github.com/Magdy-10/ecosistema-inclusivo-uaa.git
-cd ecosistema-inclusivo-uaa
+git clone https://github.com/carevalomx69/EcosistemaDigitalnclusivoUAA.git
+cd EcosistemaDigitalnclusivoUAA
+docker compose up --build
 ```
 
-### 2. Crear y activar el entorno virtual
+Abre <http://localhost:8000>. La base de datos se guarda en un volumen de Docker,
+así que los datos sobreviven a reinicios. Para empezar de cero:
+`docker compose down -v`.
 
-En **Windows (PowerShell / CMD)**:
+### Opción B. Con Python
+
+Requiere Python 3.10 o superior.
+
+En **Windows (PowerShell)**:
 ```bash
 python -m venv venv
 venv\Scripts\activate
+pip install -r requirements.txt
+python seed.py
+python run.py
 ```
 
 En **Linux / macOS**:
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-```
-
-### 3. Instalar las dependencias
-```bash
 pip install -r requirements.txt
-```
-
-### 4. Inicializar y poblar la base de datos de prueba
-Ejecuta el script `seed.py` para crear las tablas relacionales y cargar los datos de prueba (grupos, usuarios, módulos pedagógicos y actividades):
-```bash
 python seed.py
-```
-
-### 5. Iniciar el servidor local
-```bash
 python run.py
 ```
 
-Abre tu navegador en:  
-👉 **`http://127.0.0.1:5000`**
+Abre <http://127.0.0.1:5000>.
+
+`seed.py` solo carga los datos de prueba si la base está vacía. Para borrar todo y
+volver a sembrar: `python seed.py --reset`.
+
+### Pruebas automáticas
+
+```bash
+pip install -r requirements-dev.txt
+python -m pytest
+```
 
 ---
 
-## 🔑 Credenciales de Prueba (Seed Data)
+## 🔑 Cuentas de demostración
 
-El script `seed.py` preconfigura cuentas representativas para validar las funcionalidades y los diferentes perfiles DUA:
+Son cuentas ficticias. **Todas usan la contraseña de la variable de entorno
+`DEMO_PASSWORD`.** Si no se define y se ejecuta en local, la contraseña es
+`demo-local-2026`. No hay contraseñas fijas en el servidor desplegado.
 
-| Rol | Correo Electrónico | Contraseña | Perfil / Caso de Uso |
-| :--- | :--- | :--- | :--- |
-| **Administrador** | `admin@uaa.mx` | `admin2025` | Panel de control global, gestión de cuentas y carreras. |
-| **Docente** | `docente@uaa.mx` | `docente2025` | Gestión de grupos, seguimiento de progreso y analíticas. |
-| **Estudiante** (Visual / Audio) | `alumno@uaa.mx` | `alumno2025` | Preferencia por audio/multimodal (baja visión / preferencia auditiva). |
-| **Estudiante** (Alto Contraste) | `roberto@uaa.mx` | `alumno2025` | Texto grande, contraste reforzado. |
-| **Estudiante** (Auditivo / Texto) | `maria@uaa.mx` | `alumno2025` | Densidad reducida, formatos prioritarios en texto y visual. |
-| **Estudiante** (Neurodivergencia) | `luis@uaa.mx` | `alumno2025` | Texto muy grande, interfaz limpia de baja densidad cognitiva (TDAH). |
-| **Estudiante** (General) | `sofia@uaa.mx` | `alumno2025` | Modalidad estándar texto y recursos visuales. |
+| Rol | Correo | Perfil de preferencias |
+| :--- | :--- | :--- |
+| Administrador | `admin@demo.example` | Panel de control global |
+| Docente | `docente@demo.example` | Grupos y seguimiento (la ruta del docente está en desarrollo) |
+| Estudiante | `alumno@demo.example` | Prefiere audio y ritmo lento |
+| Estudiante | `roberto@demo.example` | Texto grande y alto contraste |
+| Estudiante | `maria@demo.example` | Densidad reducida, sin audio |
+| Estudiante | `luis@demo.example` | Texto muy grande, interfaz de baja densidad |
+| Estudiante | `sofia@demo.example` | Texto y recursos visuales |
+
+---
+
+## ☁️ Despliegue en Render
+
+El archivo `render.yaml` describe el servicio. Pasos, una sola vez:
+
+1. En Render: **New > Blueprint** y elige este repositorio.
+2. Render crea el servicio y genera `SECRET_KEY` y `DEMO_PASSWORD`.
+3. La contraseña de las cuentas de demostración se consulta en el servicio, en
+   **Environment**, variable `DEMO_PASSWORD`.
+4. Cada cambio que llegue a la rama `main` se despliega automáticamente.
+
+Notas del plan gratuito: el servicio se apaga tras un rato sin uso y tarda cerca de
+un minuto en despertar, y el disco es efímero (la base se reinicia en cada arranque).
+Para una demostración conviene abrir la página unos minutos antes.
+
+---
+
+## 🔒 Seguridad y privacidad
+
+- `SECRET_KEY` es obligatoria cuando `APP_ENV=production`; sin ella la aplicación no arranca.
+- Todos los formularios que envían datos (POST) exigen token CSRF.
+- El parámetro `next` del login solo acepta rutas internas.
+- Cookies de sesión `HttpOnly`, `SameSite=Lax` y `Secure` en producción (requiere HTTPS).
+- Cabeceras `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` y, en producción, HSTS.
+- El repositorio no contiene contraseñas ni datos de personas reales.
+- Antes de pilotear con personas reales: aviso de privacidad y consentimiento informado.
 
 ---
 

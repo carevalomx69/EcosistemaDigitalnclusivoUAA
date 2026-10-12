@@ -1,0 +1,14 @@
+# Ejecución local: docker compose up --build   ->   http://localhost:8000
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Contraseña de las cuentas de demostración (cámbiala si quieres)
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-demo-local-2026}
+    volumes:
+      - datos:/app/instance
+
+volumes:
+  datos:

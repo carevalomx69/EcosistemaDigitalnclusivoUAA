@@ -1,15 +1,21 @@
 services:
   - type: web
-    name: ecosistema-inclusivo-uaa
-    env: python
+    name: ecosistema-inclusivo-uaa-tesis
+    runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    # El plan gratis de Render usa disco efímero: los datos se reinician en
-    # cada arranque. Se vuelve a sembrar la BD de prueba en cada boot para
-    # garantizar que las credenciales de demo siempre funcionen.
-    startCommand: "python seed.py && gunicorn run:app"
+    # El plan gratis de Render usa disco efímero: la base SQLite se reinicia en
+    # cada arranque. seed.py solo siembra si la base está vacía, así que es
+    # seguro ejecutarlo en cada arranque (con una base persistente no borra nada).
+    startCommand: "python seed.py && gunicorn --bind 0.0.0.0:$PORT run:app"
     envVars:
+      - key: APP_ENV
+        value: production
       - key: SECRET_KEY
+        generateValue: true
+      # Contraseña de las cuentas de demostración. Se genera al crear el
+      # servicio y se consulta en el panel de Render (Environment).
+      - key: DEMO_PASSWORD
         generateValue: true
       - key: PYTHON_VERSION
         value: 3.12.7
