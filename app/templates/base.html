@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Ecosistema Digital Educativo Inclusivo — Universidad Autónoma de Aguascalientes">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>{% block titulo %}Ecosistema Educativo Inclusivo — UAA{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% block estilos_extra %}{% endblock %}
@@ -32,11 +33,12 @@
     <div class="cabecera-interior">
 
       <!-- Logo y nombre -->
-      <a href="{{ url_for('main.inicio') }}" class="logo-bloque" aria-label="Ecosistema Educativo Inclusivo UAA — Ir a inicio">
+      <a href="{{ url_for('main.inicio') }}" class="logo-bloque">
         <div class="logo-icono" aria-hidden="true">EI</div>
         <div class="logo-texto">
           <span class="logo-nombre">Ecosistema Inclusivo</span>
           <span class="logo-subtitulo">UAA · Ciencias Aplicadas de la Computación</span>
+          <span class="oculto-visual">. Ir a inicio</span>
         </div>
       </a>
 
@@ -83,15 +85,16 @@
         <!-- Controles de accesibilidad rápida -->
         {% if current_user.is_authenticated %}
         <div class="controles-accesibilidad" role="group" aria-label="Controles de accesibilidad rápida">
-          <button class="btn-accesibilidad" onclick="alternarAltoContraste()"
-                  aria-pressed="false" id="btn-contraste"
-                  title="Alternar modo alto contraste">
-            🌓 Contraste
+          <button type="button" class="btn-accesibilidad" onclick="alternarAltoContraste()"
+                  aria-pressed="false" id="btn-contraste">
+            <span aria-hidden="true">🌓</span> Contraste
           </button>
-          <button class="btn-accesibilidad" onclick="aumentarTexto()"
-                  aria-label="Aumentar tamaño de texto">A+</button>
-          <button class="btn-accesibilidad" onclick="reducirTexto()"
-                  aria-label="Reducir tamaño de texto">A-</button>
+          <button type="button" class="btn-accesibilidad" onclick="aumentarTexto()">
+            A+<span class="oculto-visual"> Aumentar tamaño de texto</span>
+          </button>
+          <button type="button" class="btn-accesibilidad" onclick="reducirTexto()">
+            A-<span class="oculto-visual"> Reducir tamaño de texto</span>
+          </button>
         </div>
         {% endif %}
       </nav>

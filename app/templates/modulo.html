@@ -68,9 +68,8 @@
                {% if sec.activa %}aria-current="location"{% endif %}>
               <span aria-hidden="true">{{ sec.icono }}</span>
               {{ sec.titulo }}
-              <span class="estado" aria-label="{{ 'Completada' if sec.completada else 'Pendiente' }}">
-                {{ '✅' if sec.completada else '⭕' }}
-              </span>
+              <span class="estado" aria-hidden="true">{{ '✅' if sec.completada else '⭕' }}</span>
+              <span class="oculto-visual">({{ 'completada' if sec.completada else 'pendiente' }})</span>
             </a>
           </li>
           {% endfor %}

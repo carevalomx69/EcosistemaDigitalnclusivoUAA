@@ -70,12 +70,14 @@
 {% if current_user.is_authenticated %}
 <div class="contenido-principal">
   <div class="alerta alerta-info" role="status">
-    👋 Bienvenido/a, <strong>{{ current_user.nombre }}</strong>.
-    {% if current_user.grupo %}
-      Estás inscrito/a en el grupo <strong>{{ current_user.grupo.nombre }}</strong>.
-    {% else %}
-      Aún no tienes un grupo asignado — contacta a tu docente.
-    {% endif %}
+    <span>
+      <span aria-hidden="true">👋</span> Bienvenido/a, <strong>{{ current_user.nombre }}</strong>.
+      {% if current_user.grupo %}
+        Estás inscrito/a en el grupo <strong>{{ current_user.grupo.nombre }}</strong>.
+      {% else %}
+        Aún no tienes un grupo asignado — contacta a tu docente.
+      {% endif %}
+    </span>
   </div>
 
   <div class="stats-grid mt-lg">

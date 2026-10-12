@@ -38,14 +38,26 @@ function aplicarPreferencias() {
 
   // Densidad reducida (menos elementos por pantalla)
   if (prefs.prefDensidad === 'reducida') body.classList.add('densidad-reducida');
+
+  sincronizarBotonContraste();
 }
 
 // ── CONTROLES DE ACCESIBILIDAD EN CABECERA ──────────────────────────────
 function alternarAltoContraste() {
   document.body.classList.toggle('modo-alto-contraste');
   var activo = document.body.classList.contains('modo-alto-contraste');
+  sincronizarBotonContraste();
   anunciar(activo ? 'Modo alto contraste activado' : 'Modo alto contraste desactivado');
-  guardarPreferenciaLocal('contraste', activo ? 'alto' : 'normal');
+  guardarPreferencia({ contraste: activo ? 'alto' : 'normal' });
+}
+
+/** Refleja el estado del contraste en aria-pressed del botón de la cabecera. */
+function sincronizarBotonContraste() {
+  var boton = document.getElementById('btn-contraste');
+  if (boton) {
+    boton.setAttribute('aria-pressed',
+      String(document.body.classList.contains('modo-alto-contraste')));
+  }
 }
 
 function aumentarTexto() {
@@ -53,11 +65,11 @@ function aumentarTexto() {
   if (!body.classList.contains('texto-grande')) {
     body.classList.add('texto-grande');
     anunciar('Texto grande activado');
-    guardarPreferenciaLocal('texto', 'grande');
+    guardarPreferencia({ texto: 'grande' });
   } else if (!body.classList.contains('texto-muy-grande')) {
     body.classList.add('texto-muy-grande');
     anunciar('Texto muy grande activado');
-    guardarPreferenciaLocal('texto', 'muy_grande');
+    guardarPreferencia({ texto: 'muy_grande' });
   }
 }
 
@@ -66,20 +78,35 @@ function reducirTexto() {
   if (body.classList.contains('texto-muy-grande')) {
     body.classList.remove('texto-muy-grande');
     anunciar('Tamaño de texto reducido');
-    guardarPreferenciaLocal('texto', 'grande');
+    guardarPreferencia({ texto: 'grande' });
   } else if (body.classList.contains('texto-grande')) {
     body.classList.remove('texto-grande');
     anunciar('Tamaño de texto normal');
-    guardarPreferenciaLocal('texto', 'normal');
+    guardarPreferencia({ texto: 'normal' });
   }
 }
 
-function guardarPreferenciaLocal(clave, valor) {
-  try {
-    var prefs = JSON.parse(sessionStorage.getItem('prefs_sesion') || '{}');
-    prefs[clave] = valor;
-    sessionStorage.setItem('prefs_sesion', JSON.stringify(prefs));
-  } catch (e) { /* sessionStorage no disponible */ }
+/**
+ * Guarda el ajuste en el servidor (perfil del usuario) para que se conserve
+ * al navegar y en próximas sesiones. Si falla, el ajuste sigue activo en la
+ * página actual y se avisa de forma accesible.
+ */
+function guardarPreferencia(cambio) {
+  var meta = document.querySelector('meta[name="csrf-token"]');
+  if (!meta || !window.fetch) { return; }
+  fetch('/preferencias', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': meta.content
+    },
+    body: JSON.stringify(cambio)
+  }).then(function (respuesta) {
+    if (!respuesta.ok) { throw new Error('HTTP ' + respuesta.status); }
+  }).catch(function () {
+    anunciar('No se pudo guardar tu preferencia. Seguirá activa solo en esta página.');
+  });
 }
 
 // ── REGIÓN LIVE PARA ANUNCIOS (WCAG 4.1.3) ──────────────────────────────

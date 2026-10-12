@@ -10,7 +10,7 @@
   --uaa-azul:        #003087;   /* Azul oscuro UAA — contraste 10.4:1 sobre blanco */
   --uaa-azul-medio:  #0057B8;   /* Azul medio — contraste 5.1:1 sobre blanco */
   --uaa-azul-claro:  #C8DEFF;   /* Azul muy claro — fondos */
-  --uaa-oro:         #C8960C;   /* Oro UAA — contraste 4.6:1 sobre blanco */
+  --uaa-oro:         #C8960C;   /* Oro UAA — solo fondos y detalles; sobre blanco da 2.68:1, no usar como texto */
   --uaa-oro-claro:   #FFF3C4;   /* Oro claro — fondos de énfasis */
 
   /* Neutros accesibles */
@@ -230,7 +230,8 @@ body {
   font-size: var(--tam-sm);
   margin-top: auto;
 }
-.pie a { color: var(--uaa-oro); }
+/* Oro claro: #C8960C sobre el azul del pie da 4.41:1; #FFD700 da más de 9:1 */
+.pie a { color: #FFD700; text-decoration: underline; }
 
 /* ── TARJETAS ─────────────────────────────────────────────────────────────── */
 .card {
@@ -292,9 +293,10 @@ body {
 }
 .btn-secundario:hover { background: var(--uaa-azul-claro); }
 .btn-oro {
-  background: var(--uaa-oro);
+  /* Oro más claro para que el texto azul alcance 4.99:1 (con #C8960C daba 4.41:1) */
+  background: #D4A017;
   color: var(--uaa-azul);
-  border-color: var(--uaa-oro);
+  border-color: #D4A017;
 }
 .btn-oro:hover { background: #B07800; border-color: #B07800; color: #FFFFFF; }
 .btn-sm { padding: 6px 14px; font-size: var(--tam-sm); }
@@ -474,10 +476,11 @@ body {
 /* ── SECCIÓN DE MÓDULO ───────────────────────────────────────────────────── */
 .modulo-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 280px minmax(0, 1fr);
   gap: 1.5rem;
   min-height: calc(100vh - 200px);
 }
+.modulo-layout > * { min-width: 0; }
 .modulo-sidebar {
   background: var(--fondo-card);
   border: 1px solid var(--borde-sutil);
@@ -778,14 +781,17 @@ body {
 
 /* ── RESPONSIVO ─────────────────────────────────────────────────────────── */
 @media (max-width: 960px) {
-  .modulo-layout { grid-template-columns: 1fr; }
+  .modulo-layout { grid-template-columns: minmax(0, 1fr); }
   .modulo-sidebar { position: static; }
 }
 @media (max-width: 768px) {
   .panel-layout { grid-template-columns: 1fr; }
   .panel-sidebar { display: none; }
   .hero-botones { flex-direction: column; align-items: center; }
-  .nav-principal { display: none; }
-  .controles-accesibilidad { display: none; }
+  /* La navegación y los controles de accesibilidad se mantienen visibles en
+     móvil y se reacomodan en varias líneas (antes se ocultaban por completo). */
+  .cabecera-interior { flex-wrap: wrap; row-gap: 0.5rem; }
+  .nav-principal { display: flex; flex-wrap: wrap; gap: 0.25rem; width: 100%; }
+  .controles-accesibilidad { margin-left: 0; padding-left: 0; border-left: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }

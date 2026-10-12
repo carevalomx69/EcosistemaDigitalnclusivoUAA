@@ -3,7 +3,7 @@ ECOSISTEMA DIGITAL EDUCATIVO INCLUSIVO — UAA
 Rutas y controladores Flask
 """
 from urllib.parse import urlparse
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models import Usuario, Grupo, Modulo, SeccionModulo, Actividad, RespuestaUsuario, TerminoGlosario
@@ -242,6 +242,35 @@ def mi_perfil():
         flash('Preferencias guardadas correctamente.', 'success')
         return redirect(url_for('main.mi_perfil'))
     return render_template('perfil.html', form=form)
+
+
+# Valores permitidos para los ajustes rápidos de la cabecera
+TAMANOS_TEXTO = ('normal', 'grande', 'muy_grande')
+CONTRASTES = ('normal', 'alto')
+
+
+@main.route('/preferencias', methods=['POST'])
+@login_required
+def guardar_preferencias():
+    """Guarda los ajustes de texto y contraste de la barra de accesibilidad
+    rápida, para que se conserven al cambiar de página y en otras sesiones.
+    Recibe JSON; el token CSRF viaja en la cabecera X-CSRFToken."""
+    datos = request.get_json(silent=True) or {}
+    cambios = {}
+    if 'texto' in datos:
+        if datos['texto'] not in TAMANOS_TEXTO:
+            return jsonify(error='Valor de texto no válido'), 400
+        cambios['pref_tamano_texto'] = datos['texto']
+    if 'contraste' in datos:
+        if datos['contraste'] not in CONTRASTES:
+            return jsonify(error='Valor de contraste no válido'), 400
+        cambios['pref_contraste'] = datos['contraste']
+    if not cambios:
+        return jsonify(error='No hay preferencias que guardar'), 400
+    for campo, valor in cambios.items():
+        setattr(current_user, campo, valor)
+    db.session.commit()
+    return '', 204
 
 
 # ── PANEL DOCENTE ──────────────────────────────────────────────────────────
