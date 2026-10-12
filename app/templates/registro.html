@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block titulo %}Registro — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal" style="max-width:700px;">
+  <div class="card mt-lg">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">📝</div>
+      <h1 class="card-titulo">Crear cuenta</h1>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.registro') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <!-- DATOS PERSONALES -->
+      <h2 style="font-size:1.1rem;color:var(--uaa-azul);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:2px solid var(--uaa-azul-claro);">
+        Datos personales
+      </h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="campo-grupo">
+          <label class="campo-label" for="nombre">
+            Nombre(s) <span class="requerido" aria-hidden="true">*</span>
+          </label>
+          <input class="campo-input" type="text" id="nombre" name="nombre"
+                 autocomplete="given-name" required aria-required="true">
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label" for="apellidos">
+            Apellidos <span class="requerido" aria-hidden="true">*</span>
+          </label>
+          <input class="campo-input" type="text" id="apellidos" name="apellidos"
+                 autocomplete="family-name" required aria-required="true">
+        </div>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="correo">
+          Correo institucional UAA <span class="requerido" aria-hidden="true">*</span>
+        </label>
+        <input class="campo-input" type="email" id="correo" name="correo"
+               autocomplete="email" required aria-required="true"
+               aria-describedby="correo-ayuda-reg" placeholder="usuario@edu.uaa.mx">
+        <span class="campo-ayuda" id="correo-ayuda-reg">
+          Usa tu correo @edu.uaa.mx o @uaa.mx
+        </span>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="carrera">
+          Carrera / Programa <span class="requerido" aria-hidden="true">*</span>
+        </label>
+        <select class="campo-select" id="carrera" name="carrera" required aria-required="true">
+          <option value="">— Selecciona tu carrera —</option>
+          <option value="lic_computacion">Licenciatura en Ciencias Computacionales</option>
+          <option value="ing_software">Ingeniería en Software</option>
+          <option value="ing_sistemas">Ingeniería en Sistemas Computacionales</option>
+          <option value="lic_matematicas">Licenciatura en Matemáticas</option>
+          <option value="posgrado_computo">Maestría/Doctorado en Ciencias Aplicadas de la Computación</option>
+          <option value="otra">Otra carrera de la UAA</option>
+        </select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="campo-grupo">
+          <label class="campo-label" for="contrasena">
+            Contraseña <span class="requerido" aria-hidden="true">*</span>
+          </label>
+          <input class="campo-input" type="password" id="contrasena" name="contrasena"
+                 autocomplete="new-password" required aria-required="true"
+                 aria-describedby="pass-ayuda">
+          <span class="campo-ayuda" id="pass-ayuda">Mínimo 8 caracteres</span>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label" for="confirmar_contrasena">
+            Confirmar contraseña <span class="requerido" aria-hidden="true">*</span>
+          </label>
+          <input class="campo-input" type="password" id="confirmar_contrasena"
+                 name="confirmar_contrasena" autocomplete="new-password"
+                 required aria-required="true">
+        </div>
+      </div>
+
+      <hr class="separador">
+
+      <!-- PERFIL DE PREFERENCIAS DE ACCESIBILIDAD -->
+      <!-- WCAG 3.2.4, DUA: implicación — el usuario configura su propia experiencia -->
+      <h2 style="font-size:1.1rem;color:var(--uaa-azul);margin-bottom:0.5rem;">
+        Preferencias de accesibilidad
+      </h2>
+      <p class="texto-sutil mb-md" id="prefs-desc">
+        Configura cómo quieres que se presente el contenido. Puedes cambiar estas preferencias en cualquier momento desde tu perfil. Esta información es personal y no es compartida con otros usuarios.
+      </p>
+
+      <fieldset aria-describedby="prefs-desc" style="border:none;padding:0;">
+        <legend class="campo-label" style="margin-bottom:0.75rem;">
+          Tamaño de texto preferido
+        </legend>
+        <div class="prefs-grid">
+          <label class="pref-opcion">
+            <input type="radio" name="pref_tamano_texto" value="normal" checked>
+            <span class="pref-icono" aria-hidden="true">🔤</span>
+            <span class="pref-texto">Texto normal</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="radio" name="pref_tamano_texto" value="grande">
+            <span class="pref-icono" aria-hidden="true">🔠</span>
+            <span class="pref-texto">Texto grande</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="radio" name="pref_tamano_texto" value="muy_grande">
+            <span class="pref-icono" aria-hidden="true">🔡</span>
+            <span class="pref-texto">Texto muy grande</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset style="border:none;padding:0;margin-top:1rem;">
+        <legend class="campo-label" style="margin-bottom:0.75rem;">
+          Modo de presentación visual
+        </legend>
+        <div class="prefs-grid">
+          <label class="pref-opcion">
+            <input type="radio" name="pref_contraste" value="normal" checked>
+            <span class="pref-icono" aria-hidden="true">☀️</span>
+            <span class="pref-texto">Contraste normal</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="radio" name="pref_contraste" value="alto">
+            <span class="pref-icono" aria-hidden="true">🌓</span>
+            <span class="pref-texto">Alto contraste</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset style="border:none;padding:0;margin-top:1rem;">
+        <legend class="campo-label" style="margin-bottom:0.75rem;">
+          Velocidad de reproducción de audio
+        </legend>
+        <div class="campo-grupo" style="max-width:300px;">
+          <select class="campo-select" name="pref_velocidad_audio" id="vel-audio"
+                  aria-describedby="vel-ayuda">
+            <option value="0.75">0.75× — Más lento</option>
+            <option value="1.0" selected>1.0× — Normal</option>
+            <option value="1.25">1.25× — Más rápido</option>
+            <option value="1.5">1.5× — Rápido</option>
+          </select>
+          <span class="campo-ayuda" id="vel-ayuda">
+            Aplica a todos los audios de los módulos
+          </span>
+        </div>
+      </fieldset>
+
+      <fieldset style="border:none;padding:0;margin-top:1rem;">
+        <legend class="campo-label" style="margin-bottom:0.75rem;">
+          Densidad de información en pantalla
+        </legend>
+        <div class="prefs-grid">
+          <label class="pref-opcion">
+            <input type="radio" name="pref_densidad" value="normal" checked>
+            <span class="pref-icono" aria-hidden="true">📄</span>
+            <span class="pref-texto">Normal</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="radio" name="pref_densidad" value="reducida">
+            <span class="pref-icono" aria-hidden="true">🪶</span>
+            <span class="pref-texto">Reducida — menos elementos a la vez</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset style="border:none;padding:0;margin-top:1rem;">
+        <legend class="campo-label" style="margin-bottom:0.75rem;">
+          Formatos de contenido preferidos (selecciona todos los que apliquen)
+        </legend>
+        <div class="prefs-grid">
+          <label class="pref-opcion">
+            <input type="checkbox" name="pref_formatos" value="texto" checked>
+            <span class="pref-icono" aria-hidden="true">📝</span>
+            <span class="pref-texto">Texto</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="checkbox" name="pref_formatos" value="audio">
+            <span class="pref-icono" aria-hidden="true">🔊</span>
+            <span class="pref-texto">Audio con transcripción</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="checkbox" name="pref_formatos" value="video">
+            <span class="pref-icono" aria-hidden="true">🎬</span>
+            <span class="pref-texto">Video con subtítulos</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="checkbox" name="pref_formatos" value="visual">
+            <span class="pref-icono" aria-hidden="true">🖼️</span>
+            <span class="pref-texto">Infografías y esquemas</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <hr class="separador">
+
+      <button type="submit" class="btn btn-primario btn-bloque btn-lg">
+        Crear cuenta y comenzar
+      </button>
+
+      <p class="texto-centro texto-sutil mt-md">
+        ¿Ya tienes cuenta?
+        <a href="{{ url_for('main.login') }}" style="color:var(--uaa-azul);font-weight:600;">
+          Inicia sesión aquí
+        </a>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

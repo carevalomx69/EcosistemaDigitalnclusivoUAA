@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block titulo %}Actividad — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal" style="max-width:800px;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">✏️</div>
+      <div>
+        <h1 class="card-titulo">{{ actividad.titulo if actividad else 'Actividad de aprendizaje' }}</h1>
+        <p class="texto-sutil">Elige el modo de respuesta que prefieras — DUA: Acción y Expresión</p>
+      </div>
+    </div>
+
+    <!-- PREGUNTA / ENUNCIADO -->
+    <div class="alerta alerta-info" style="margin-bottom:1.5rem;">
+      <span aria-hidden="true">📋</span>
+      <div>
+        <strong>Pregunta:</strong>
+        {{ actividad.pregunta if actividad else '¿Cuál de los siguientes enunciados describe mejor el principio POUR de la accesibilidad web?' }}
+      </div>
+    </div>
+
+    <!-- SELECTOR DE MODO DE RESPUESTA — DUA: 3 modalidades -->
+    <div role="group" aria-label="Selecciona cómo quieres responder"
+         style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <span style="font-size:0.85rem;font-weight:700;color:var(--uaa-azul);align-self:center;">
+        Responder como:
+      </span>
+      <button class="btn btn-primario btn-sm" aria-pressed="true"
+              onclick="cambiarModo('seleccion')" id="modo-seleccion">
+        ☑️ Selección múltiple
+      </button>
+      <button class="btn btn-secundario btn-sm" aria-pressed="false"
+              onclick="cambiarModo('texto')" id="modo-texto">
+        ✍️ Texto libre
+      </button>
+      <button class="btn btn-secundario btn-sm" aria-pressed="false"
+              onclick="cambiarModo('visual')" id="modo-visual">
+        🖼️ Selección visual
+      </button>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.actividad', id=actividad.id if actividad else 1) }}"
+          novalidate id="form-actividad">
+      {{ form.hidden_tag() if form else '' }}
+      <input type="hidden" name="modo_respuesta" id="modo-oculto" value="seleccion">
+
+      <!-- MODO 1: SELECCIÓN MÚLTIPLE CON TECLADO — WCAG 2.1.1 -->
+      <fieldset id="area-seleccion" style="border:none;padding:0;">
+        <legend class="oculto-visual">Opciones de respuesta — selecciona una</legend>
+        {% set opciones = actividad.opciones if actividad else [
+          {'id': 'a', 'texto': 'Los cuatro principios son: Perceptible, Operable, Comprensible y Robusto'},
+          {'id': 'b', 'texto': 'Los cuatro principios son: Perceptible, Observable, Comprensible y Robusto'},
+          {'id': 'c', 'texto': 'Los cuatro principios son: Presentable, Operable, Comprensible y Robusto'},
+          {'id': 'd', 'texto': 'Los cuatro principios son: Perceptible, Operable, Claro y Robusto'},
+        ] %}
+        {% for op in opciones %}
+        <label style="display:flex;align-items:flex-start;gap:12px;padding:12px;
+                      border:2px solid var(--borde-sutil);border-radius:var(--radio);
+                      margin-bottom:8px;cursor:pointer;transition:all 0.15s;"
+               class="opcion-label">
+          <input type="radio" name="respuesta_seleccion" value="{{ op.id }}"
+                 style="width:20px;height:20px;margin-top:2px;flex-shrink:0;">
+          <span style="line-height:1.6;">{{ op.texto }}</span>
+        </label>
+        {% endfor %}
+      </fieldset>
+
+      <!-- MODO 2: TEXTO LIBRE -->
+      <div id="area-texto" style="display:none;">
+        <div class="campo-grupo">
+          <label class="campo-label" for="respuesta-texto">
+            Escribe tu respuesta
+          </label>
+          <textarea class="campo-textarea" id="respuesta-texto" name="respuesta_texto"
+                    rows="5" aria-describedby="texto-ayuda"
+                    placeholder="Escribe aquí tu respuesta con tus propias palabras..."></textarea>
+          <span class="campo-ayuda" id="texto-ayuda">
+            No hay respuesta mínima de longitud. Exprésate con tus propias palabras.
+          </span>
+        </div>
+      </div>
+
+      <!-- MODO 3: SELECCIÓN VISUAL CON ALT TEXT — WCAG 1.1.1 -->
+      <div id="area-visual" style="display:none;">
+        <p class="campo-label">Selecciona la imagen que mejor representa el concepto</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+          {% for i in range(1, 3) %}
+          <label style="cursor:pointer;">
+            <input type="radio" name="respuesta_visual" value="img{{ i }}"
+                   class="oculto-visual">
+            <div style="border:3px solid var(--borde-sutil);border-radius:var(--radio);
+                        padding:1rem;text-align:center;transition:all 0.15s;"
+                 class="visual-opcion">
+              <div style="width:100%;height:120px;background:var(--uaa-azul-claro);
+                          border-radius:var(--radio);display:flex;align-items:center;
+                          justify-content:center;font-size:3rem;margin-bottom:0.75rem;"
+                   aria-hidden="true">
+                {{ '📊' if i == 1 else '📋' }}
+              </div>
+              <p style="font-size:0.85rem;font-weight:600;color:var(--uaa-azul);">
+                {{ 'Diagrama POUR' if i == 1 else 'Tabla comparativa' }}
+              </p>
+              <p style="font-size:0.75rem;color:var(--texto-sutil);margin-top:4px;">
+                {{ 'Muestra los cuatro principios WCAG en un diagrama circular' if i == 1 else 'Compara los criterios de nivel A, AA y AAA' }}
+              </p>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex-entre" style="margin-top:1.5rem;">
+        <a href="{{ url_for('main.modulo') }}" class="btn btn-secundario">
+          ← Volver al módulo
+        </a>
+        <button type="submit" class="btn btn-primario btn-lg">
+          Enviar respuesta ✓
+        </button>
+      </div>
+    </form>
+
+    <!-- RETROALIMENTACIÓN — se muestra tras enviar -->
+    {% if retroalimentacion %}
+    <div class="alerta alerta-{% if correcto %}exito{% else %}aviso{% endif %}"
+         role="alert" aria-live="assertive" style="margin-top:1.5rem;">
+      <span aria-hidden="true">{{ '✅' if correcto else '💡' }}</span>
+      <div>
+        <strong>{{ '¡Correcto!' if correcto else 'Casi.' }}</strong>
+        {{ retroalimentacion }}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+// Cambiar modo de respuesta — DUA: acción y expresión diversa
+function cambiarModo(modo) {
+  var modos = ['seleccion', 'texto', 'visual'];
+  modos.forEach(function(m) {
+    var area = document.getElementById('area-' + m);
+    var btn  = document.getElementById('modo-' + m);
+    if (area) area.style.display = (m === modo) ? 'block' : 'none';
+    if (btn) {
+      btn.setAttribute('aria-pressed', String(m === modo));
+      btn.className = (m === modo) ? 'btn btn-primario btn-sm' : 'btn btn-secundario btn-sm';
+    }
+  });
+  document.getElementById('modo-oculto').value = modo;
+  anunciar('Modo de respuesta: ' + modo);
+}
+
+// Resaltar opción seleccionada visualmente
+document.querySelectorAll('.opcion-label input[type="radio"]').forEach(function(radio) {
+  radio.addEventListener('change', function() {
+    document.querySelectorAll('.opcion-label').forEach(function(label) {
+      label.style.borderColor = 'var(--borde-sutil)';
+      label.style.background  = 'var(--fondo-card)';
+    });
+    if (this.checked) {
+      this.closest('.opcion-label').style.borderColor = 'var(--uaa-azul)';
+      this.closest('.opcion-label').style.background  = 'var(--uaa-azul-claro)';
+    }
+  });
+});
+</script>
+{% endblock %}

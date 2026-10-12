@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block titulo %}Iniciar sesión — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block cabecera %}{% endblock %}
+{% block pie %}{% endblock %}
+
+{% block contenido %}
+<div class="login-layout">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="login-logo-icono" aria-hidden="true">EI</div>
+      <h1 class="login-titulo">Ecosistema Educativo Inclusivo</h1>
+      <p class="login-subtitulo">Universidad Autónoma de Aguascalientes</p>
+    </div>
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% if mensajes %}
+        {% for cat, msg in mensajes %}
+          <div class="alerta alerta-{% if cat == 'error' %}error{% else %}info{% endif %}" role="alert">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- WCAG 3.3.7: Sin CAPTCHA ni prueba cognitiva para autenticación -->
+    <form method="POST" action="{{ url_for('main.login') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="correo">
+          Correo institucional UAA
+          <span class="requerido" aria-hidden="true">*</span>
+        </label>
+        <input
+          class="campo-input"
+          type="email"
+          id="correo"
+          name="correo"
+          autocomplete="email"
+          autocapitalize="none"
+          spellcheck="false"
+          required
+          aria-required="true"
+          aria-describedby="correo-ayuda"
+          placeholder="usuario@edu.uaa.mx"
+        >
+        <span class="campo-ayuda" id="correo-ayuda">
+          Usa tu correo institucional de la UAA
+        </span>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label" for="contrasena">
+          Contraseña
+          <span class="requerido" aria-hidden="true">*</span>
+        </label>
+        <input
+          class="campo-input"
+          type="password"
+          id="contrasena"
+          name="contrasena"
+          autocomplete="current-password"
+          required
+          aria-required="true"
+        >
+      </div>
+
+      <div class="campo-grupo" style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="recordar" name="recordar" style="width:18px;height:18px;">
+        <label for="recordar" style="font-size:0.9rem;cursor:pointer;">Mantener sesión iniciada</label>
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-bloque btn-lg mt-md">
+        Iniciar sesión
+      </button>
+    </form>
+
+    <hr class="separador">
+    <p class="texto-centro texto-sutil">
+      ¿No tienes cuenta?
+      <a href="{{ url_for('main.registro') }}" style="color:var(--uaa-azul);font-weight:600;">
+        Regístrate aquí
+      </a>
+    </p>
+  </div>
+</div>
+{% endblock %}

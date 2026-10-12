@@ -1,0 +1,80 @@
+<svg viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="infog-title infog-desc">
+  <title id="infog-title">Los tres pilares del Ecosistema Digital Educativo Inclusivo</title>
+  <desc id="infog-desc">Diagrama de tres círculos que se intersectan. El círculo izquierdo representa el DUA v3.0. El círculo derecho representa WCAG 2.2. El círculo inferior representa la teoría ecológica de Bronfenbrenner. En la intersección central aparece: Ecosistema Digital Educativo Inclusivo.</desc>
+
+  <defs>
+    <filter id="sombra">
+      <feDropShadow dx="2" dy="3" stdDeviation="4" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="700" height="500" fill="#F8F9FA" rx="12"/>
+
+  <!-- Título -->
+  <text x="350" y="38" text-anchor="middle" font-family="Segoe UI, sans-serif"
+        font-size="18" font-weight="700" fill="#003087">
+    Ecosistema Digital Educativo Inclusivo — UAA
+  </text>
+
+  <!-- Círculo DUA (izquierdo) -->
+  <circle cx="260" cy="230" r="140" fill="#C8DEFF" fill-opacity="0.7"
+          stroke="#003087" stroke-width="2.5" filter="url(#sombra)"/>
+  <text x="185" y="170" font-family="Segoe UI, sans-serif" font-size="14"
+        font-weight="700" fill="#003087" text-anchor="middle">DUA v3.0</text>
+  <text x="185" y="188" font-family="Segoe UI, sans-serif" font-size="11"
+        fill="#1A1A1A" text-anchor="middle">CAST, 2024</text>
+  <text x="185" y="210" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Representación</text>
+  <text x="185" y="226" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Acción y expresión</text>
+  <text x="185" y="242" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Implicación activa</text>
+  <text x="185" y="258" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">Pilar pedagógico</text>
+
+  <!-- Círculo WCAG (derecho) -->
+  <circle cx="440" cy="230" r="140" fill="#C8DEFF" fill-opacity="0.7"
+          stroke="#003087" stroke-width="2.5" filter="url(#sombra)"/>
+  <text x="515" y="170" font-family="Segoe UI, sans-serif" font-size="14"
+        font-weight="700" fill="#003087" text-anchor="middle">WCAG 2.2</text>
+  <text x="515" y="188" font-family="Segoe UI, sans-serif" font-size="11"
+        fill="#1A1A1A" text-anchor="middle">W3C, 2023</text>
+  <text x="515" y="210" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Perceptible</text>
+  <text x="515" y="226" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Operable</text>
+  <text x="515" y="242" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Comprensible</text>
+  <text x="515" y="258" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">• Robusto</text>
+  <text x="515" y="274" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">Pilar técnico</text>
+
+  <!-- Círculo Bronfenbrenner (inferior) -->
+  <circle cx="350" cy="360" r="130" fill="#FFF3C4" fill-opacity="0.8"
+          stroke="#C8960C" stroke-width="2.5" filter="url(#sombra)"/>
+  <text x="350" y="396" font-family="Segoe UI, sans-serif" font-size="13"
+        font-weight="700" fill="#7A5C00" text-anchor="middle">Bronfenbrenner</text>
+  <text x="350" y="413" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">Navarro y Tudge, 2022</text>
+  <text x="350" y="430" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">Micro · Meso · Exo · Macro</text>
+  <text x="350" y="448" font-family="Segoe UI, sans-serif" font-size="10"
+        fill="#4A4A4A" text-anchor="middle">Pilar sistémico</text>
+
+  <!-- Centro — intersección triple -->
+  <circle cx="350" cy="268" r="58" fill="#003087" fill-opacity="0.92"/>
+  <text x="350" y="256" font-family="Segoe UI, sans-serif" font-size="9"
+        font-weight="700" fill="#FFFFFF" text-anchor="middle">Ecosistema</text>
+  <text x="350" y="268" font-family="Segoe UI, sans-serif" font-size="9"
+        font-weight="700" fill="#C8960C" text-anchor="middle">Digital Educativo</text>
+  <text x="350" y="280" font-family="Segoe UI, sans-serif" font-size="9"
+        font-weight="700" fill="#FFFFFF" text-anchor="middle">Inclusivo</text>
+
+  <!-- Leyenda inferior -->
+  <text x="350" y="490" text-anchor="middle" font-family="Segoe UI, sans-serif"
+        font-size="10" fill="#6B6B6B">
+    Alonso García (2025) — Doctorado en Ciencias Aplicadas de la Computación, UAA
+  </text>
+</svg>

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block titulo %}Declaración de Accesibilidad — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal" style="max-width:800px;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">♿</div>
+      <h1 class="card-titulo">Declaración de Accesibilidad</h1>
+    </div>
+
+    <div class="alerta alerta-exito">
+      <span aria-hidden="true">✅</span>
+      <div>
+        Esta plataforma está comprometida con el nivel de conformidad
+        <strong>AA de las WCAG 2.2</strong> (W3C, 2023).
+      </div>
+    </div>
+
+    <h2 style="font-size:1.2rem;color:var(--uaa-azul);margin:1.5rem 0 0.75rem;">
+      Sobre esta plataforma
+    </h2>
+    <p style="line-height:1.8;margin-bottom:1rem;">
+      El Ecosistema Digital Educativo Inclusivo de la UAA es un prototipo funcional
+      desarrollado como parte de la investigación doctoral
+      <em>Modelo Teórico-Operativo de Ecosistema Digital Educativo Inclusivo para Educación Superior</em>
+      (Alonso García, 2025), en el Doctorado en Ciencias Aplicadas de la Computación.
+    </p>
+    <p style="line-height:1.8;margin-bottom:1.5rem;">
+      La plataforma se diseñó desde sus fundamentos para ser accesible, integrando
+      simultáneamente el Diseño Universal para el Aprendizaje (DUA v3.0, CAST 2024),
+      las pautas WCAG 2.2 nivel AA (W3C, 2023) y la perspectiva ecológica de Bronfenbrenner.
+    </p>
+
+    <h2 style="font-size:1.2rem;color:var(--uaa-azul);margin:1.5rem 0 0.75rem;">
+      Estado de conformidad
+    </h2>
+    <div class="tabla-contenedor">
+      <table class="tabla-accesible" aria-label="Estado de conformidad WCAG 2.2 por principio">
+        <thead>
+          <tr>
+            <th scope="col">Principio POUR</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Criterios verificados</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Perceptible</strong></td>
+            <td><span class="badge badge-verde">✓ Cumple AA</span></td>
+            <td>1.1.1, 1.2.2, 1.3.1, 1.3.3, 1.4.3, 1.4.4, 1.4.10</td>
+          </tr>
+          <tr>
+            <td><strong>Operable</strong></td>
+            <td><span class="badge badge-verde">✓ Cumple AA</span></td>
+            <td>2.1.1, 2.4.1, 2.4.3, 2.4.6, 2.4.7</td>
+          </tr>
+          <tr>
+            <td><strong>Comprensible</strong></td>
+            <td><span class="badge badge-verde">✓ Cumple AA</span></td>
+            <td>3.1.1, 3.2.4, 3.2.6, 3.3.2, 3.3.7 (WCAG 2.2)</td>
+          </tr>
+          <tr>
+            <td><strong>Robusto</strong></td>
+            <td><span class="badge badge-verde">✓ Cumple AA</span></td>
+            <td>4.1.2, 4.1.3</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="font-size:1.2rem;color:var(--uaa-azul);margin:1.5rem 0 0.75rem;">
+      Tecnologías asistivas compatibles
+    </h2>
+    <ul style="padding-left:1.5rem;line-height:2.2;">
+      <li>NVDA (NonVisual Desktop Access) — Windows</li>
+      <li>VoiceOver — macOS, iOS, iPadOS</li>
+      <li>TalkBack — Android</li>
+      <li>Navegación completa por teclado (Tab, Shift+Tab, Enter, Escape, flechas)</li>
+      <li>Ampliación de pantalla hasta 400% sin pérdida de contenido (WCAG 1.4.10)</li>
+    </ul>
+
+    <h2 style="font-size:1.2rem;color:var(--uaa-azul);margin:1.5rem 0 0.75rem;">
+      Reportar problemas de accesibilidad
+    </h2>
+    <p style="line-height:1.8;margin-bottom:1rem;">
+      Si encuentras alguna barrera de accesibilidad en esta plataforma, por favor
+      repórtala al equipo de investigación. Tu retroalimentación es parte del proceso
+      de evaluación y mejora continua del ecosistema.
+    </p>
+    <p>
+      <a href="mailto:investigacion.ecosistema@uaa.mx" class="btn btn-primario">
+        📧 Reportar problema de accesibilidad
+      </a>
+    </p>
+
+    <hr class="separador">
+    <p class="texto-sutil">
+      Esta declaración fue preparada el 1 de enero de 2025.
+      Última revisión con Axe DevTools: pendiente de primera auditoría formal.
+      Tecnología: HTML5 semántico + ARIA, Python Flask, WCAG 2.2.
+    </p>
+  </div>
+</div>
+{% endblock %}

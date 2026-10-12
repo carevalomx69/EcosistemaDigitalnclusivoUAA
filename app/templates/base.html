@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es"><!-- WCAG 3.1.1: idioma declarado -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ecosistema Digital Educativo Inclusivo — Universidad Autónoma de Aguascalientes">
+  <title>{% block titulo %}Ecosistema Educativo Inclusivo — UAA{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block estilos_extra %}{% endblock %}
+</head>
+
+<!-- Las preferencias del usuario se aplican vía data-attributes
+     El JS las lee y aplica las clases CSS correspondientes (adaptación dinámica) -->
+<body
+  data-pref-texto="{{ current_user.pref_tamano_texto if current_user.is_authenticated else 'normal' }}"
+  data-pref-contraste="{{ current_user.pref_contraste if current_user.is_authenticated else 'normal' }}"
+  data-pref-densidad="{{ current_user.pref_densidad if current_user.is_authenticated else 'normal' }}"
+  data-pref-velocidad-audio="{{ current_user.pref_velocidad_audio if current_user.is_authenticated else '1.0' }}"
+>
+
+  <!-- WCAG 2.4.1: Skip link — primer elemento focuseable de la página -->
+  <a href="#contenido-principal" class="skip-link">
+    Saltar al contenido principal
+  </a>
+
+  <!-- Región de anuncios para lectores de pantalla — WCAG 4.1.3 -->
+  <div id="anuncio-live" role="status" aria-live="polite" aria-atomic="true" class="oculto-visual"></div>
+
+  <!-- ── CABECERA ──────────────────────────────────────────────────────── -->
+  {% block cabecera %}
+  <header class="cabecera" role="banner">
+    <div class="cabecera-interior">
+
+      <!-- Logo y nombre -->
+      <a href="{{ url_for('main.inicio') }}" class="logo-bloque" aria-label="Ecosistema Educativo Inclusivo UAA — Ir a inicio">
+        <div class="logo-icono" aria-hidden="true">EI</div>
+        <div class="logo-texto">
+          <span class="logo-nombre">Ecosistema Inclusivo</span>
+          <span class="logo-subtitulo">UAA · Ciencias Aplicadas de la Computación</span>
+        </div>
+      </a>
+
+      <!-- Navegación principal — WCAG 2.4.1, 4.1.2 -->
+      <nav class="nav-principal" aria-label="Navegación principal">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('main.inicio') }}"
+             class="nav-enlace {% if request.endpoint == 'main.inicio' %}activo{% endif %}"
+             {% if request.endpoint == 'main.inicio' %}aria-current="page"{% endif %}>
+            🏠 Inicio
+          </a>
+          <a href="{{ url_for('main.modulo') }}"
+             class="nav-enlace {% if 'modulo' in request.endpoint %}activo{% endif %}"
+             {% if 'modulo' in request.endpoint %}aria-current="page"{% endif %}>
+            📚 Módulo
+          </a>
+          {% if current_user.rol in ['docente', 'admin'] %}
+          <a href="{{ url_for('main.panel_docente') }}"
+             class="nav-enlace {% if 'panel_docente' in request.endpoint %}activo{% endif %}"
+             {% if 'panel_docente' in request.endpoint %}aria-current="page"{% endif %}>
+            👨‍🏫 Mi Panel
+          </a>
+          {% endif %}
+          {% if current_user.rol == 'admin' %}
+          <a href="{{ url_for('main.panel_admin') }}"
+             class="nav-enlace {% if 'panel_admin' in request.endpoint %}activo{% endif %}"
+             {% if 'panel_admin' in request.endpoint %}aria-current="page"{% endif %}>
+            ⚙️ Administración
+          </a>
+          {% endif %}
+          <a href="{{ url_for('main.mi_perfil') }}"
+             class="nav-enlace {% if 'perfil' in request.endpoint %}activo{% endif %}"
+             {% if 'perfil' in request.endpoint %}aria-current="page"{% endif %}>
+            👤 {{ current_user.nombre_corto }}
+          </a>
+          <a href="{{ url_for('main.cerrar_sesion') }}" class="nav-enlace">
+            🚪 Salir
+          </a>
+        {% else %}
+          <a href="{{ url_for('main.login') }}" class="nav-enlace">Iniciar sesión</a>
+          <a href="{{ url_for('main.registro') }}" class="nav-enlace">Registrarse</a>
+        {% endif %}
+
+        <!-- Controles de accesibilidad rápida -->
+        {% if current_user.is_authenticated %}
+        <div class="controles-accesibilidad" role="group" aria-label="Controles de accesibilidad rápida">
+          <button class="btn-accesibilidad" onclick="alternarAltoContraste()"
+                  aria-pressed="false" id="btn-contraste"
+                  title="Alternar modo alto contraste">
+            🌓 Contraste
+          </button>
+          <button class="btn-accesibilidad" onclick="aumentarTexto()"
+                  aria-label="Aumentar tamaño de texto">A+</button>
+          <button class="btn-accesibilidad" onclick="reducirTexto()"
+                  aria-label="Reducir tamaño de texto">A-</button>
+        </div>
+        {% endif %}
+      </nav>
+    </div>
+    <div class="cabecera-linea" aria-hidden="true"></div>
+  </header>
+  {% endblock %}
+
+  <!-- ── ALERTAS FLASH ─────────────────────────────────────────────────── -->
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% if mensajes %}
+      <div role="alert" aria-live="assertive" style="max-width:1200px;margin:1rem auto;padding:0 1.5rem;">
+        {% for categoria, mensaje in mensajes %}
+          <div class="alerta alerta-{% if categoria == 'error' %}error{% elif categoria == 'success' %}exito{% else %}info{% endif %}">
+            <span aria-hidden="true">
+              {% if categoria == 'error' %}❌{% elif categoria == 'success' %}✅{% else %}ℹ️{% endif %}
+            </span>
+            <span>{{ mensaje }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- ── CONTENIDO PRINCIPAL ───────────────────────────────────────────── -->
+  <!-- tabindex="-1" permite que el skip link envíe el foco aquí — WCAG 2.4.1 -->
+  <main id="contenido-principal" tabindex="-1" role="main">
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <!-- ── PIE DE PÁGINA ─────────────────────────────────────────────────── -->
+  {% block pie %}
+  <footer class="pie" role="contentinfo">
+    <p>
+      Ecosistema Digital Educativo Inclusivo · Universidad Autónoma de Aguascalientes ·
+      Doctorado en Ciencias Aplicadas de la Computación · 2025
+    </p>
+    <p class="mt-sm">
+      <a href="{{ url_for('main.accesibilidad') }}">Declaración de Accesibilidad</a> ·
+      Diseñado con
+      <abbr title="Web Content Accessibility Guidelines versión 2.2">WCAG 2.2</abbr>
+      nivel AA ·
+      <abbr title="Diseño Universal para el Aprendizaje">DUA</abbr>
+      v3.0 (CAST, 2024)
+    </p>
+  </footer>
+  {% endblock %}
+
+  <script src="{{ url_for('static', filename='js/accesibilidad.js') }}"></script>
+  {% block scripts_extra %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block titulo %}Administración — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="panel-layout">
+  <nav class="panel-sidebar" aria-label="Menú de administración">
+    <p class="panel-sidebar-titulo">Administración</p>
+    <ul class="panel-sidebar-nav" role="list">
+      <li><a href="{{ url_for('main.panel_admin') }}" class="activo" aria-current="page">
+        📊 Resumen
+      </a></li>
+      <li><a href="#">👤 Usuarios</a></li>
+      <li><a href="#">👥 Grupos</a></li>
+      <li><a href="#">📚 Módulos</a></li>
+    </ul>
+    <p class="panel-sidebar-titulo">Accesibilidad</p>
+    <ul class="panel-sidebar-nav" role="list">
+      <li><a href="#">📋 Auditoría WCAG</a></li>
+      <li><a href="{{ url_for('main.accesibilidad') }}">🏅 Declaración</a></li>
+    </ul>
+  </nav>
+
+  <div class="panel-cuerpo">
+    <div class="panel-cabecera">
+      <div>
+        <h1 class="panel-titulo">Panel de Administración</h1>
+        <p class="texto-sutil">{{ current_user.nombre }} — Administrador</p>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secundario btn-sm" data-abre-modal="nuevo-usuario">
+          + Usuario
+        </button>
+        <button class="btn btn-primario btn-sm" data-abre-modal="nuevo-grupo-admin">
+          + Grupo
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-numero">{{ total_usuarios }}</span>
+        <span class="stat-etiqueta">Usuarios registrados</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-numero">{{ total_grupos }}</span>
+        <span class="stat-etiqueta">Grupos activos</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-numero">{{ total_docentes }}</span>
+        <span class="stat-etiqueta">Docentes</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-numero">{{ total_estudiantes }}</span>
+        <span class="stat-etiqueta">Estudiantes</span>
+      </div>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="card mt-lg">
+      <div class="card-header">
+        <div class="card-icono" aria-hidden="true">👤</div>
+        <h2 class="card-titulo">Usuarios recientes</h2>
+      </div>
+      <div class="tabla-contenedor">
+        <table class="tabla-accesible" aria-label="Lista de usuarios registrados en el sistema">
+          <thead>
+            <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">Correo</th>
+              <th scope="col">Rol</th>
+              <th scope="col">Carrera</th>
+              <th scope="col">Grupo</th>
+              <th scope="col">Preferencias</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for usuario in usuarios %}
+            <tr>
+              <td><strong>{{ usuario.nombre }}</strong></td>
+              <td>{{ usuario.correo }}</td>
+              <td>
+                <span class="badge {% if usuario.rol == 'admin' %}badge-rojo{% elif usuario.rol == 'docente' %}badge-oro{% else %}badge-azul{% endif %}">
+                  {{ usuario.rol }}
+                </span>
+              </td>
+              <td>{{ usuario.carrera or '—' }}</td>
+              <td>{{ usuario.grupo.nombre if usuario.grupo else '—' }}</td>
+              <td>
+                <span class="badge badge-gris" title="Texto: {{ usuario.pref_tamano_texto }}, Contraste: {{ usuario.pref_contraste }}">
+                  {{ '🔠' if usuario.pref_tamano_texto != 'normal' else '🔤' }}
+                  {{ '🌓' if usuario.pref_contraste == 'alto' else '☀️' }}
+                </span>
+              </td>
+              <td style="white-space:nowrap;">
+                <a href="#" class="btn btn-secundario btn-sm">Editar</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" style="text-align:center;padding:2rem;color:var(--texto-sutil);">
+                No hay usuarios registrados todavía.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo usuario -->
+<div id="overlay-nuevo-usuario" class="modal-overlay modal-oculto" hidden>
+  <div class="modal-caja" role="dialog" aria-modal="true"
+       aria-labelledby="titulo-modal-user" id="nuevo-usuario">
+    <h2 class="modal-titulo" id="titulo-modal-user">Crear nuevo usuario</h2>
+    <form method="POST" action="{{ url_for('main.crear_usuario_admin') }}" novalidate>
+      {{ form.hidden_tag() if form else '' }}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="campo-grupo">
+          <label class="campo-label" for="u-nombre">Nombre(s)</label>
+          <input class="campo-input" type="text" id="u-nombre" name="nombre" required>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label" for="u-apellidos">Apellidos</label>
+          <input class="campo-input" type="text" id="u-apellidos" name="apellidos" required>
+        </div>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label" for="u-correo">Correo</label>
+        <input class="campo-input" type="email" id="u-correo" name="correo" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="campo-grupo">
+          <label class="campo-label" for="u-rol">Rol</label>
+          <select class="campo-select" id="u-rol" name="rol" required>
+            <option value="estudiante">Estudiante</option>
+            <option value="docente">Docente</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label" for="u-grupo">Grupo (opcional)</label>
+          <select class="campo-select" id="u-grupo" name="grupo_id">
+            <option value="">Sin grupo</option>
+            {% for g in grupos %}
+            <option value="{{ g.id }}">{{ g.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label" for="u-pass">Contraseña temporal</label>
+        <input class="campo-input" type="password" id="u-pass" name="contrasena" required>
+      </div>
+      <div class="flex-entre" style="margin-top:1.25rem;">
+        <button type="button" class="btn btn-secundario"
+                data-cierra-modal="nuevo-usuario">Cancelar</button>
+        <button type="submit" class="btn btn-primario">Crear usuario</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

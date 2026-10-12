@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-titulo">
+  <h1 class="hero-titulo" id="hero-titulo">
+    Ecosistema Digital<br>
+    <span>Educativo Inclusivo</span>
+  </h1>
+  <p class="hero-subtitulo">
+    Plataforma de aprendizaje accesible para todos los estudiantes de la UAA,
+    diseñada con WCAG 2.2, DUA v3.0 y perspectiva ecológica de Bronfenbrenner.
+  </p>
+  {% if current_user.is_authenticated %}
+  <div class="hero-botones">
+    <a href="{{ url_for('main.modulo') }}" class="btn btn-oro btn-lg">
+      📚 Ir al Módulo de Aprendizaje
+    </a>
+    <a href="{{ url_for('main.mi_perfil') }}" class="btn btn-secundario btn-lg"
+       style="border-color:#fff;color:#fff;">
+      ⚙️ Mis preferencias
+    </a>
+  </div>
+  {% else %}
+  <div class="hero-botones">
+    <a href="{{ url_for('main.registro') }}" class="btn btn-oro btn-lg">
+      Crear cuenta
+    </a>
+    <a href="{{ url_for('main.login') }}" class="btn btn-secundario btn-lg"
+       style="border-color:#fff;color:#fff;">
+      Iniciar sesión
+    </a>
+  </div>
+  {% endif %}
+</section>
+
+<!-- TRES PILARES -->
+<section aria-labelledby="pilares-titulo" style="background:var(--fondo-pagina);padding:1rem 0 2rem;">
+  <h2 id="pilares-titulo" class="oculto-visual">Fundamentos teóricos del ecosistema</h2>
+  <div class="hero-pilares">
+    <div class="pilar-card">
+      <span class="pilar-icono" aria-hidden="true">🎓</span>
+      <h3 class="pilar-titulo">DUA v3.0</h3>
+      <p class="pilar-desc">
+        Diseño Universal para el Aprendizaje. Múltiples formas de representación,
+        acción, expresión e implicación activa. CAST (2024).
+      </p>
+    </div>
+    <div class="pilar-card">
+      <span class="pilar-icono" aria-hidden="true">♿</span>
+      <h3 class="pilar-titulo">WCAG 2.2 AA</h3>
+      <p class="pilar-desc">
+        Pautas de Accesibilidad al Contenido Web. Principios POUR:
+        Perceptible, Operable, Comprensible, Robusto. W3C (2023).
+      </p>
+    </div>
+    <div class="pilar-card">
+      <span class="pilar-icono" aria-hidden="true">🌐</span>
+      <h3 class="pilar-titulo">Perspectiva Ecológica</h3>
+      <p class="pilar-desc">
+        Modelo de Bronfenbrenner adaptado al entorno digital.
+        Micro, meso, exo y macrosistema. Navarro y Tudge (2022).
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- BIENVENIDA PERSONALIZADA SI ESTÁ AUTENTICADO -->
+{% if current_user.is_authenticated %}
+<div class="contenido-principal">
+  <div class="alerta alerta-info" role="status">
+    👋 Bienvenido/a, <strong>{{ current_user.nombre }}</strong>.
+    {% if current_user.grupo %}
+      Estás inscrito/a en el grupo <strong>{{ current_user.grupo.nombre }}</strong>.
+    {% else %}
+      Aún no tienes un grupo asignado — contacta a tu docente.
+    {% endif %}
+  </div>
+
+  <div class="stats-grid mt-lg">
+    <div class="stat-card">
+      <span class="stat-numero">0%</span>
+      <span class="stat-etiqueta">Progreso en el módulo</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-numero">0</span>
+      <span class="stat-etiqueta">Actividades completadas</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-numero">6</span>
+      <span class="stat-etiqueta">Secciones disponibles</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-numero">3</span>
+      <span class="stat-etiqueta">Formatos de contenido</span>
+    </div>
+  </div>
+
+  <div class="card mt-lg">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">⚡</div>
+      <h2 class="card-titulo">Acceso rápido</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+      <a href="{{ url_for('main.modulo') }}" class="btn btn-primario">
+        📚 Continuar módulo
+      </a>
+      <a href="{{ url_for('main.mi_perfil') }}" class="btn btn-secundario">
+        ⚙️ Ajustar preferencias
+      </a>
+      {% if current_user.rol in ['docente','admin'] %}
+      <a href="{{ url_for('main.panel_docente') }}" class="btn btn-secundario">
+        👨‍🏫 Panel docente
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

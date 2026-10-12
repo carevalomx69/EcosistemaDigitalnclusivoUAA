@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block titulo %}Mis preferencias — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal" style="max-width:700px;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">⚙️</div>
+      <div>
+        <h1 class="card-titulo">Mis preferencias de accesibilidad</h1>
+        <p class="texto-sutil">{{ current_user.nombre }} · {{ current_user.carrera }}</p>
+      </div>
+    </div>
+
+    <div class="alerta alerta-info" style="margin-bottom:1.5rem;">
+      <span aria-hidden="true">ℹ️</span>
+      <span>
+        Estas preferencias configuran cómo se presenta el contenido del módulo para ti.
+        Puedes cambiarlas en cualquier momento sin afectar el progreso en el módulo.
+      </span>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.mi_perfil') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <fieldset style="border:none;padding:0;margin-bottom:1.5rem;">
+        <legend class="campo-label">Tamaño de texto</legend>
+        <div class="prefs-grid">
+          {% for valor, etiqueta, icono in [('normal','Normal','🔤'),('grande','Grande','🔠'),('muy_grande','Muy grande','🔡')] %}
+          <label class="pref-opcion">
+            <input type="radio" name="pref_tamano_texto" value="{{ valor }}"
+                   {{ 'checked' if current_user.pref_tamano_texto == valor }}>
+            <span class="pref-icono" aria-hidden="true">{{ icono }}</span>
+            <span class="pref-texto">{{ etiqueta }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <fieldset style="border:none;padding:0;margin-bottom:1.5rem;">
+        <legend class="campo-label">Modo visual</legend>
+        <div class="prefs-grid">
+          <label class="pref-opcion">
+            <input type="radio" name="pref_contraste" value="normal"
+                   {{ 'checked' if current_user.pref_contraste == 'normal' }}>
+            <span class="pref-icono" aria-hidden="true">☀️</span>
+            <span class="pref-texto">Contraste normal</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="radio" name="pref_contraste" value="alto"
+                   {{ 'checked' if current_user.pref_contraste == 'alto' }}>
+            <span class="pref-icono" aria-hidden="true">🌓</span>
+            <span class="pref-texto">Alto contraste</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="campo-grupo" style="max-width:320px;">
+        <label class="campo-label" for="pref-vel">Velocidad de audio</label>
+        <select class="campo-select" id="pref-vel" name="pref_velocidad_audio">
+          {% for val, label in [('0.75','0.75× — Más lento'),('1.0','1.0× — Normal'),('1.25','1.25× — Más rápido'),('1.5','1.5× — Rápido')] %}
+          <option value="{{ val }}" {{ 'selected' if current_user.pref_velocidad_audio|string == val }}>
+            {{ label }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <fieldset style="border:none;padding:0;margin-bottom:1.5rem;">
+        <legend class="campo-label">Densidad de información</legend>
+        <div class="prefs-grid">
+          <label class="pref-opcion">
+            <input type="radio" name="pref_densidad" value="normal"
+                   {{ 'checked' if current_user.pref_densidad == 'normal' }}>
+            <span class="pref-icono" aria-hidden="true">📄</span>
+            <span class="pref-texto">Normal</span>
+          </label>
+          <label class="pref-opcion">
+            <input type="radio" name="pref_densidad" value="reducida"
+                   {{ 'checked' if current_user.pref_densidad == 'reducida' }}>
+            <span class="pref-icono" aria-hidden="true">🪶</span>
+            <span class="pref-texto">Reducida</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-primario btn-lg">
+        Guardar preferencias
+      </button>
+    </form>
+  </div>
+
+  <!-- Info del grupo -->
+  <div class="card mt-md">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">👥</div>
+      <h2 class="card-titulo">Mi grupo</h2>
+    </div>
+    {% if current_user.grupo %}
+    <p><strong>Grupo:</strong> {{ current_user.grupo.nombre }}</p>
+    <p><strong>Carrera:</strong> {{ current_user.grupo.carrera }}</p>
+    <p><strong>Docente:</strong> {{ current_user.grupo.docente.nombre if current_user.grupo.docente else 'No asignado' }}</p>
+    {% else %}
+    <div class="alerta alerta-aviso">
+      <span aria-hidden="true">⚠️</span>
+      <span>Aún no tienes un grupo asignado. Contacta a tu docente o al administrador.</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

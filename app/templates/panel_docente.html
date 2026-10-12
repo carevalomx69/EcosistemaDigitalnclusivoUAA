@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% block titulo %}Panel Docente — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="panel-layout">
+  <!-- Sidebar del panel -->
+  <nav class="panel-sidebar" aria-label="Menú del panel docente">
+    <p class="panel-sidebar-titulo">Mi panel</p>
+    <ul class="panel-sidebar-nav" role="list">
+      <li><a href="{{ url_for('main.panel_docente') }}" class="activo" aria-current="page">
+        📊 Resumen
+      </a></li>
+      <li><a href="#">👥 Mis grupos</a></li>
+      <li><a href="#">📚 Módulo activo</a></li>
+      <li><a href="#">📈 Progreso de estudiantes</a></li>
+    </ul>
+    <p class="panel-sidebar-titulo">Accesibilidad del módulo</p>
+    <ul class="panel-sidebar-nav" role="list">
+      <li><a href="#">⚙️ Configurar accesibilidad</a></li>
+      <li><a href="#">🔊 Gestionar audios</a></li>
+      <li><a href="#">🎬 Gestionar videos</a></li>
+    </ul>
+    <p class="panel-sidebar-titulo">UAA — Mesosistema</p>
+    <ul class="panel-sidebar-nav" role="list">
+      <li><a href="https://www.uaa.mx" target="_blank" rel="noopener">
+        🏛️ Portal UAA
+      </a></li>
+      <li><a href="#" target="_blank">
+        ♿ Servicios de apoyo (CADIS)
+      </a></li>
+    </ul>
+  </nav>
+
+  <!-- Cuerpo del panel -->
+  <div class="panel-cuerpo">
+    <div class="panel-cabecera">
+      <div>
+        <h1 class="panel-titulo">Panel del Docente</h1>
+        <p class="texto-sutil">Bienvenido/a, {{ current_user.nombre }}</p>
+      </div>
+      <button class="btn btn-primario" data-abre-modal="nuevo-grupo">
+        + Nuevo grupo
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-numero">{{ grupos|length }}</span>
+        <span class="stat-etiqueta">Grupos asignados</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-numero">{{ total_estudiantes }}</span>
+        <span class="stat-etiqueta">Estudiantes total</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-numero">{{ promedio_progreso }}%</span>
+        <span class="stat-etiqueta">Progreso promedio</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-numero">{{ actividades_completadas }}</span>
+        <span class="stat-etiqueta">Actividades completadas</span>
+      </div>
+    </div>
+
+    <!-- Tabla de grupos -->
+    <div class="card mt-lg">
+      <div class="card-header">
+        <div class="card-icono" aria-hidden="true">👥</div>
+        <h2 class="card-titulo">Mis grupos</h2>
+      </div>
+      <div class="tabla-contenedor">
+        <table class="tabla-accesible" aria-label="Grupos asignados al docente">
+          <thead>
+            <tr>
+              <th scope="col">Grupo</th>
+              <th scope="col">Carrera</th>
+              <th scope="col">Estudiantes</th>
+              <th scope="col">Progreso prom.</th>
+              <th scope="col">Accesibilidad módulo</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grupo in grupos %}
+            <tr>
+              <td><strong>{{ grupo.nombre }}</strong></td>
+              <td>{{ grupo.carrera }}</td>
+              <td>
+                <span class="badge badge-azul">{{ grupo.estudiantes|length }} estudiantes</span>
+              </td>
+              <td>
+                <div class="progreso-barra" style="height:8px;min-width:80px;"
+                     role="progressbar" aria-valuenow="{{ grupo.progreso_promedio }}"
+                     aria-valuemin="0" aria-valuemax="100"
+                     aria-label="{{ grupo.nombre }}: {{ grupo.progreso_promedio }}% de progreso promedio">
+                  <div class="progreso-relleno" style="width:{{ grupo.progreso_promedio }}%;"></div>
+                </div>
+                <small>{{ grupo.progreso_promedio }}%</small>
+              </td>
+              <td>
+                <span class="badge badge-verde">✓ WCAG AA</span>
+              </td>
+              <td style="white-space:nowrap;">
+                <a href="#" class="btn btn-secundario btn-sm">Ver detalle</a>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" style="text-align:center;padding:2rem;color:var(--texto-sutil);">
+                No tienes grupos asignados. Crea uno o solicita asignación al administrador.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Configuración de accesibilidad del módulo (Exosistema) -->
+    <div class="card mt-lg">
+      <div class="card-header">
+        <div class="card-icono" aria-hidden="true">♿</div>
+        <h2 class="card-titulo">Configuración de accesibilidad del módulo</h2>
+      </div>
+      <p class="texto-sutil mb-md">
+        Ajusta los parámetros de accesibilidad del módulo para todos tus grupos.
+        Estos controles reflejan el exosistema del modelo ecológico de Bronfenbrenner.
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;">
+        <div class="card" style="padding:1rem;">
+          <h3 style="font-size:0.9rem;font-weight:700;color:var(--uaa-azul);margin-bottom:0.75rem;">
+            ⏱️ Tiempo en actividades
+          </h3>
+          <select class="campo-select" aria-label="Tiempo límite por actividad">
+            <option>Sin límite de tiempo</option>
+            <option>15 minutos</option>
+            <option>30 minutos</option>
+            <option>60 minutos</option>
+          </select>
+        </div>
+        <div class="card" style="padding:1rem;">
+          <h3 style="font-size:0.9rem;font-weight:700;color:var(--uaa-azul);margin-bottom:0.75rem;">
+            🔄 Intentos por actividad
+          </h3>
+          <select class="campo-select" aria-label="Número de intentos permitidos">
+            <option>Intentos ilimitados</option>
+            <option>3 intentos</option>
+            <option>2 intentos</option>
+            <option>1 intento</option>
+          </select>
+        </div>
+        <div class="card" style="padding:1rem;">
+          <h3 style="font-size:0.9rem;font-weight:700;color:var(--uaa-azul);margin-bottom:0.75rem;">
+            💡 Retroalimentación
+          </h3>
+          <select class="campo-select" aria-label="Tipo de retroalimentación">
+            <option>Inmediata tras responder</option>
+            <option>Al final del módulo</option>
+            <option>Solo para el docente</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-md">
+        <button class="btn btn-primario">Guardar configuración del módulo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo grupo -->
+<div id="overlay-nuevo-grupo" class="modal-overlay modal-oculto" hidden>
+  <div class="modal-caja" role="dialog" aria-modal="true"
+       aria-labelledby="titulo-modal-grupo" id="nuevo-grupo">
+    <h2 class="modal-titulo" id="titulo-modal-grupo">Crear nuevo grupo</h2>
+    <form method="POST" action="{{ url_for('main.crear_grupo') }}" novalidate>
+      {{ form.hidden_tag() if form else '' }}
+      <div class="campo-grupo">
+        <label class="campo-label" for="nombre-grupo">
+          Nombre del grupo <span class="requerido" aria-hidden="true">*</span>
+        </label>
+        <input class="campo-input" type="text" id="nombre-grupo" name="nombre"
+               required aria-required="true" placeholder="Ej: Grupo A — Ingeniería en Software 2025">
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label" for="carrera-grupo">
+          Carrera <span class="requerido" aria-hidden="true">*</span>
+        </label>
+        <select class="campo-select" id="carrera-grupo" name="carrera" required aria-required="true">
+          <option value="">— Selecciona —</option>
+          <option value="lic_computacion">Licenciatura en Ciencias Computacionales</option>
+          <option value="ing_software">Ingeniería en Software</option>
+          <option value="ing_sistemas">Ingeniería en Sistemas Computacionales</option>
+          <option value="posgrado">Maestría / Doctorado</option>
+          <option value="otra">Otra</option>
+        </select>
+      </div>
+      <div class="flex-entre" style="margin-top:1.25rem;">
+        <button type="button" class="btn btn-secundario"
+                data-cierra-modal="nuevo-grupo">Cancelar</button>
+        <button type="submit" class="btn btn-primario">Crear grupo</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
