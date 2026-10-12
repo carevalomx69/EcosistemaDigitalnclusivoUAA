@@ -2,6 +2,7 @@
 ECOSISTEMA DIGITAL EDUCATIVO INCLUSIVO — UAA
 Rutas y controladores Flask
 """
+from urllib.parse import urlparse
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
@@ -9,6 +10,19 @@ from app.models import Usuario, Grupo, Modulo, SeccionModulo, Actividad, Respues
 from app.forms import FormLogin, FormRegistro, FormPerfil, FormGrupo, FormUsuarioAdmin
 
 main = Blueprint('main', __name__)
+
+ROLES_VALIDOS = ('estudiante', 'docente', 'admin')
+
+
+def _destino_seguro(destino):
+    """Acepta solo rutas internas ('/algo'). Rechaza URLs absolutas o que
+    empiezan con '//' para evitar redirecciones a sitios externos."""
+    if not destino:
+        return None
+    partes = urlparse(destino)
+    if partes.scheme or partes.netloc or not destino.startswith('/') or destino.startswith('//') or '\\' in destino:
+        return None
+    return destino
 
 
 # ── INICIO ─────────────────────────────────────────────────────────────────
@@ -27,7 +41,7 @@ def login():
         usuario = Usuario.query.filter_by(correo=form.correo.data.lower().strip()).first()
         if usuario and usuario.verificar_contrasena(form.contrasena.data):
             login_user(usuario, remember=form.recordar.data)
-            siguiente = request.args.get('next')
+            siguiente = _destino_seguro(request.args.get('next'))
             flash(f'Bienvenido/a, {usuario.nombre_corto}.', 'success')
             return redirect(siguiente or url_for('main.inicio'))
         flash('Correo o contraseña incorrectos. Intenta de nuevo.', 'error')
@@ -300,7 +314,11 @@ def crear_usuario_admin():
     apellidos  = request.form.get('apellidos', '').strip()
     correo     = request.form.get('correo', '').lower().strip()
     rol        = request.form.get('rol', 'estudiante')
+    if rol not in ROLES_VALIDOS:
+        rol = 'estudiante'
     grupo_id   = request.form.get('grupo_id') or None
+    if grupo_id is not None:
+        grupo_id = int(grupo_id) if grupo_id.isdigit() else None
     contrasena = request.form.get('contrasena', '')
 
     if not all([nombre, apellidos, correo, contrasena]):
