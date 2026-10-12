@@ -2,22 +2,46 @@
 ECOSISTEMA DIGITAL EDUCATIVO INCLUSIVO — UAA
 Script de datos iniciales (seed)
 
-Ejecutar UNA SOLA VEZ tras arrancar el proyecto por primera vez:
-    python seed.py
+Uso:
+    python seed.py            # carga los datos solo si la base está vacía
+    python seed.py --reset    # BORRA toda la base y la vuelve a sembrar
+
+Las cuentas de demostración usan la contraseña de la variable de entorno
+DEMO_PASSWORD. En local, si no se define, se usa una contraseña de desarrollo.
+Con APP_ENV=production la variable es obligatoria; si falta, no se crean usuarios.
 
 Crea: usuarios de prueba (admin, docente, alumnos), grupos por carrera,
 glosario, módulo y una actividad de ejemplo.
 """
+import json
+import os
+import sys
+
 from app import create_app, db
 from app.models import Usuario, Grupo, Modulo, SeccionModulo, Actividad, TerminoGlosario
 
 app = create_app()
 
+REINICIAR = '--reset' in sys.argv
+EN_PRODUCCION = os.environ.get('APP_ENV') == 'production'
+CONTRASENA_DEMO = os.environ.get('DEMO_PASSWORD')
+
+if not CONTRASENA_DEMO:
+    if EN_PRODUCCION:
+        print("APP_ENV=production y falta DEMO_PASSWORD: no se crean usuarios de demostración.")
+        sys.exit(0)
+    CONTRASENA_DEMO = 'demo-local-2026'  # solo para ejecución local
+
 with app.app_context():
 
-    print("Limpiando base de datos...")
-    db.drop_all()
+    if REINICIAR:
+        print("Reiniciando base de datos (--reset)...")
+        db.drop_all()
     db.create_all()
+
+    if Usuario.query.first() is not None:
+        print("La base ya tiene datos; no se vuelve a sembrar. Usa --reset para reiniciar.")
+        sys.exit(0)
 
     # ── GRUPOS ────────────────────────────────────────────────────────────
     print("Creando grupos...")
@@ -37,55 +61,55 @@ with app.app_context():
     # ── USUARIOS ──────────────────────────────────────────────────────────
     print("Creando usuarios de prueba...")
 
-    admin = Usuario(nombre='Carlos', apellidos='Arévalo Mercado',
-                    correo='admin@uaa.mx', rol='admin', carrera='posgrado_computo')
-    admin.establecer_contrasena('admin2025')
+    admin = Usuario(nombre='Admin', apellidos='Demo',
+                    correo='admin@demo.example', rol='admin', carrera='posgrado_computo')
+    admin.establecer_contrasena(CONTRASENA_DEMO)
 
-    docente = Usuario(nombre='Estela', apellidos='Muñoz Andrade',
-                      correo='docente@uaa.mx', rol='docente', carrera='posgrado_computo',
+    docente = Usuario(nombre='Docente', apellidos='Demo',
+                      correo='docente@demo.example', rol='docente', carrera='posgrado_computo',
                       grupo_id=g1.id)
-    docente.establecer_contrasena('docente2025')
+    docente.establecer_contrasena(CONTRASENA_DEMO)
 
     # Estudiantes con diferentes perfiles de preferencias (representan las condiciones
     # de discapacidad del estudio sin almacenar diagnósticos médicos)
     alumnos = [
         Usuario(nombre='Ana', apellidos='García López',
-                correo='alumno@uaa.mx', rol='estudiante',
+                correo='alumno@demo.example', rol='estudiante',
                 carrera='ing_software', grupo_id=g1.id,
                 # Perfil: preferencia por audio (ej: discapacidad visual)
                 pref_tamano_texto='normal', pref_contraste='normal',
                 pref_velocidad_audio=0.75, pref_formatos='texto,audio'),
 
         Usuario(nombre='Roberto', apellidos='Hernández Cruz',
-                correo='roberto@uaa.mx', rol='estudiante',
+                correo='roberto@demo.example', rol='estudiante',
                 carrera='ing_software', grupo_id=g1.id,
                 # Perfil: texto grande, alto contraste (ej: baja visión)
                 pref_tamano_texto='grande', pref_contraste='alto',
                 pref_velocidad_audio=1.0, pref_formatos='texto,visual'),
 
         Usuario(nombre='María', apellidos='Torres Ramírez',
-                correo='maria@uaa.mx', rol='estudiante',
+                correo='maria@demo.example', rol='estudiante',
                 carrera='lic_computacion', grupo_id=g2.id,
                 # Perfil: densidad reducida, sin audio (ej: discapacidad auditiva)
                 pref_tamano_texto='normal', pref_contraste='normal',
                 pref_densidad='reducida', pref_formatos='texto,video,visual'),
 
         Usuario(nombre='Luis', apellidos='Jiménez Pérez',
-                correo='luis@uaa.mx', rol='estudiante',
+                correo='luis@demo.example', rol='estudiante',
                 carrera='lic_computacion', grupo_id=g2.id,
                 # Perfil: texto muy grande, densidad reducida (ej: TDAH)
                 pref_tamano_texto='muy_grande', pref_contraste='normal',
                 pref_densidad='reducida', pref_formatos='texto'),
 
         Usuario(nombre='Sofía', apellidos='Vega Morales',
-                correo='sofia@uaa.mx', rol='estudiante',
+                correo='sofia@demo.example', rol='estudiante',
                 carrera='ing_sistemas', grupo_id=g3.id,
                 # Perfil: normal (ej: discapacidad del habla — prefiere texto/visual)
                 pref_tamano_texto='normal', pref_contraste='normal',
                 pref_formatos='texto,visual'),
     ]
     for a in alumnos:
-        a.establecer_contrasena('alumno2025')
+        a.establecer_contrasena(CONTRASENA_DEMO)
 
     db.session.add(admin)
     db.session.add(docente)
@@ -169,7 +193,6 @@ with app.app_context():
     db.session.add_all(secciones)
 
     # ── ACTIVIDAD DE EJEMPLO ──────────────────────────────────────────────
-    import json
     actividad = Actividad(
         modulo_id=modulo.id,
         titulo='Los principios POUR de WCAG 2.2',
@@ -194,18 +217,18 @@ with app.app_context():
     print("  DATOS DE PRUEBA CARGADOS CORRECTAMENTE")
     print("=" * 60)
     print()
-    print("  Usuarios disponibles:")
-    print("    admin@uaa.mx     /  admin2025    (Administrador)")
-    print("    docente@uaa.mx   /  docente2025  (Docente)")
-    print("    alumno@uaa.mx    /  alumno2025   (Estudiante — Perfil audio)")
-    print("    roberto@uaa.mx   /  alumno2025   (Estudiante — Perfil alto contraste)")
-    print("    maria@uaa.mx     /  alumno2025   (Estudiante — Perfil auditivo)")
-    print("    luis@uaa.mx      /  alumno2025   (Estudiante — Perfil texto grande)")
-    print("    sofia@uaa.mx     /  alumno2025   (Estudiante — Perfil visual)")
+    print("  Cuentas de demostración (contraseña: la de DEMO_PASSWORD):")
+    print("    admin@demo.example    (Administrador)")
+    print("    docente@demo.example  (Docente)")
+    print("    alumno@demo.example   (Estudiante, preferencia por audio)")
+    print("    roberto@demo.example  (Estudiante, alto contraste)")
+    print("    maria@demo.example    (Estudiante, densidad reducida y sin audio)")
+    print("    luis@demo.example     (Estudiante, texto muy grande)")
+    print("    sofia@demo.example    (Estudiante, texto y recursos visuales)")
     print()
     print("  Grupos creados: 4")
     print("  Términos de glosario: 7")
     print("  Módulo: 1 (con 6 secciones y 1 actividad)")
     print()
-    print("  Ahora ejecuta: python run.py")
+    print("  Ahora ejecuta: python run.py (o docker compose up --build)")
     print("=" * 60)
