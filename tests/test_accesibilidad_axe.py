@@ -19,12 +19,16 @@ sync_api = pytest.importorskip('playwright.sync_api')
 from werkzeug.serving import make_server  # noqa: E402
 
 from app import create_app, db  # noqa: E402
-from app.models import Usuario  # noqa: E402
+import json  # noqa: E402
+from app.diagnostico import IDS_ITEMS  # noqa: E402
+from app.models import CursoDocente, Modulo, SeccionModulo, Usuario  # noqa: E402
 
 AXE = (Path(__file__).parent / 'vendor' / 'axe.min.js').read_text(encoding='utf-8')
 ETIQUETAS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 PUBLICAS = ['/login', '/registro', '/accesibilidad']
-PRIVADAS = ['/', '/modulo', '/panel/docente', '/perfil', '/actividad/1']
+PRIVADAS = ['/', '/modulo', '/modulo?seccion=2', '/panel/docente', '/perfil', '/actividad/1',
+            '/ruta-docente/', '/ruta-docente/curso/nuevo',
+            '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado']
 
 
 @pytest.fixture(scope='module')
@@ -36,6 +40,18 @@ def servidor(tmp_path_factory):
                     correo='docente@demo.example', rol='docente')
         u.establecer_contrasena('clave-de-prueba-1')
         db.session.add(u)
+        db.session.flush()
+        m = Modulo(titulo='Módulo de prueba', activo=True)
+        db.session.add(m)
+        db.session.flush()
+        db.session.add_all([
+            SeccionModulo(modulo_id=m.id, orden=1, titulo='Primera', contenido_texto='<p>Uno</p>'),
+            SeccionModulo(modulo_id=m.id, orden=2, titulo='Segunda', contenido_texto='<p>Dos</p>'),
+        ])
+        respuestas = {i: ('si' if n % 2 else 'parcial') for n, i in enumerate(IDS_ITEMS)}
+        respuestas[IDS_ITEMS[0]] = 'no_se'
+        db.session.add(CursoDocente(docente_id=u.id, nombre='Curso de prueba',
+                                    diagnostico_json=json.dumps(respuestas)))
         db.session.commit()
     srv = make_server('127.0.0.1', 0, app, threaded=True)
     hilo = threading.Thread(target=srv.serve_forever, daemon=True)

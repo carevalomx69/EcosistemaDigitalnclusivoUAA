@@ -81,6 +81,8 @@ def create_app(config=None):
     # Registrar blueprint
     from app.routes import main
     app.register_blueprint(main)
+    from app.ruta_docente import ruta
+    app.register_blueprint(ruta)
 
     # Crear tablas al inicio
     with app.app_context():

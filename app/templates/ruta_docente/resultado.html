@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block titulo %}Resultado del diagnóstico — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.inicio') }}">← Volver a la ruta docente</a></p>
+  <h1 class="panel-titulo">Resultado: {{ curso.nombre }}</h1>
+  <p class="texto-sutil">
+    Diagnóstico del {{ (curso.diagnostico_fecha or curso.creado).strftime('%d/%m/%Y') }}.
+    Sirve para elegir por dónde empezar, no para calificarte.
+  </p>
+
+  {% set paso_actual = 1 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  <section class="card mt-lg" aria-labelledby="h-resumen">
+    <h2 class="card-titulo" id="h-resumen">Cómo está tu curso en cada principio del DUA</h2>
+    <ul class="barras" role="list">
+      {% for p in r.principios %}
+      <li>
+        <div class="barra-cabecera">
+          <strong>{{ p.nombre }}</strong>
+          <span>{{ p.porcentaje }} % · {{ p.si }} de {{ p.total }} afirmaciones con «Sí»</span>
+        </div>
+        <div class="progreso-barra" aria-hidden="true">
+          <div class="progreso-relleno" style="width:{{ p.porcentaje }}%;"></div>
+        </div>
+        <p class="texto-sutil">{{ p.descripcion }}</p>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-sugerencias">
+    <h2 class="card-titulo" id="h-sugerencias">Para empezar</h2>
+    {% if r.sugerencias %}
+    <p>Estas son tres mejoras con las que podrías comenzar, ordenadas por cuánto margen hay y por esfuerzo.</p>
+    <ol class="sugerencias">
+      {% for s in r.sugerencias %}
+      <li>
+        <p><strong>{{ s.texto }}</strong></p>
+        <p class="texto-sutil">{{ s.principio }} · {{ s.criterio }} ·
+          {{ {1: 'esfuerzo bajo', 2: 'esfuerzo medio', 3: 'esfuerzo alto'}[s.esfuerzo] }}
+          · tu respuesta: {{ {'parcial': 'en parte', 'no': 'no', 'no_se': 'no lo sé', 'si': 'sí'}[s.respuesta] }}</p>
+        <p>{{ s.accion }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+    {% else %}
+    <p>Respondiste «Sí» en todas las afirmaciones. El siguiente paso de la ruta te ayudará a verificarlo con evidencia.</p>
+    {% endif %}
+  </section>
+
+  {% if r.por_explorar %}
+  <section class="card mt-lg" aria-labelledby="h-explorar">
+    <h2 class="card-titulo" id="h-explorar">Por explorar</h2>
+    <p>Marcaste «No lo sé» en estas afirmaciones. Averiguarlo ya es un avance.</p>
+    <ul>{% for i in r.por_explorar %}<li>{{ i.texto }}</li>{% endfor %}</ul>
+  </section>
+  {% endif %}
+
+  <p class="mt-lg">
+    <a class="btn btn-secundario" href="{{ url_for('ruta_docente.diagnostico', curso_id=curso.id) }}">Repetir el diagnóstico</a>
+  </p>
+  <p class="texto-sutil">Siguiente paso de la ruta: Planeación con DUA (próximamente).</p>
+</div>
+{% endblock %}

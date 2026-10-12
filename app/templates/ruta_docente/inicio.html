@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block titulo %}Ruta docente — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <h1 class="panel-titulo">Ruta docente hacia la enseñanza inclusiva</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Un recorrido en cinco pasos para empezar a hacer más inclusivo uno de tus cursos.
+    Por ahora está disponible el primer paso. Los demás se irán habilitando durante el desarrollo del prototipo.
+  </p>
+
+  {% set paso_actual = 1 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  <section class="card mt-lg" aria-labelledby="titulo-cursos">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">📚</div>
+      <h2 class="card-titulo" id="titulo-cursos">Mis cursos</h2>
+    </div>
+
+    {% if cursos %}
+    <ul class="lista-cursos" role="list">
+      {% for c in cursos %}
+      <li class="curso-item">
+        <div>
+          <strong>{{ c.nombre }}</strong>
+          <span class="texto-sutil">
+            {% if c.programa %}· {{ c.programa }}{% endif %}
+            · {{ {'presencial': 'Presencial', 'hibrida': 'Híbrida', 'en_linea': 'En línea'}.get(c.modalidad, c.modalidad) }}
+          </span><br>
+          {% if c.tiene_diagnostico %}
+            <span class="badge badge-azul">Diagnóstico completado el {{ (c.diagnostico_fecha or c.creado).strftime('%d/%m/%Y') }}</span>
+          {% else %}
+            <span class="badge badge-oro">Diagnóstico pendiente</span>
+          {% endif %}
+        </div>
+        <div class="acciones-curso">
+          {% if c.tiene_diagnostico %}
+          <a class="btn btn-primario btn-sm" href="{{ url_for('ruta_docente.resultado', curso_id=c.id) }}">
+            Ver resultado<span class="oculto-visual"> de {{ c.nombre }}</span>
+          </a>
+          <a class="btn btn-secundario btn-sm" href="{{ url_for('ruta_docente.diagnostico', curso_id=c.id) }}">
+            Repetir<span class="oculto-visual"> diagnóstico de {{ c.nombre }}</span>
+          </a>
+          {% else %}
+          <a class="btn btn-primario btn-sm" href="{{ url_for('ruta_docente.diagnostico', curso_id=c.id) }}">
+            Responder diagnóstico<span class="oculto-visual"> de {{ c.nombre }}</span>
+          </a>
+          {% endif %}
+          <form method="post" action="{{ url_for('ruta_docente.curso_eliminar', curso_id=c.id) }}"
+                data-confirmar="¿Eliminar el curso {{ c.nombre }} y su diagnóstico? Esta acción no se puede deshacer.">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-secundario btn-sm">
+              Eliminar<span class="oculto-visual"> {{ c.nombre }}</span>
+            </button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Todavía no has agregado ningún curso.</p>
+    {% endif %}
+
+    <p class="mt-md">
+      <a class="btn btn-oro" href="{{ url_for('ruta_docente.curso_nuevo') }}">
+        <span aria-hidden="true">+</span> Agregar un curso
+      </a>
+    </p>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.querySelectorAll('form[data-confirmar]').forEach(function (f) {
+  f.addEventListener('submit', function (e) {
+    if (!window.confirm(f.getAttribute('data-confirmar'))) e.preventDefault();
+  });
+});
+</script>
+{% endblock %}

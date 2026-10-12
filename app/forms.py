@@ -4,8 +4,8 @@ Formularios Flask-WTF
 WCAG 3.3.2: Todos los campos tienen etiquetas y ayuda contextual
 """
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional
+from wtforms import StringField, PasswordField, BooleanField, SelectField, TextAreaField, IntegerField
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, NumberRange
 
 
 class FormLogin(FlaskForm):
@@ -63,3 +63,24 @@ class FormUsuarioAdmin(FlaskForm):
 
 class FormActividad(FlaskForm):
     pass  # Los campos se procesan directamente de request.form
+
+
+class FormCurso(FlaskForm):
+    """Datos de contexto del curso (ruta docente, paso 1). Sin datos de estudiantes."""
+    nombre = StringField('Nombre del curso', validators=[DataRequired(), Length(3, 150)])
+    programa = StringField('Programa educativo', validators=[Optional(), Length(max=150)])
+    modalidad = SelectField('Modalidad', choices=[
+        ('presencial', 'Presencial'),
+        ('hibrida', 'Híbrida'),
+        ('en_linea', 'En línea'),
+    ], validators=[DataRequired()])
+    num_estudiantes = IntegerField('Número aproximado de estudiantes',
+                                   validators=[Optional(), NumberRange(1, 500)])
+    plataforma = StringField('Plataforma o herramientas que usas', validators=[Optional(), Length(max=100)])
+    observaciones = TextAreaField('Qué te gustaría mejorar (opcional)',
+                                  validators=[Optional(), Length(max=1000)])
+
+
+class FormVacio(FlaskForm):
+    """Formulario sin campos, solo para validar el token CSRF."""
+    pass

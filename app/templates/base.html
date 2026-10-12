@@ -56,6 +56,11 @@
             📚 Módulo
           </a>
           {% if current_user.rol in ['docente', 'admin'] %}
+          <a href="{{ url_for('ruta_docente.inicio') }}"
+             class="nav-enlace {% if request.endpoint and request.endpoint.startswith('ruta_docente') %}activo{% endif %}"
+             {% if request.endpoint and request.endpoint.startswith('ruta_docente') %}aria-current="page"{% endif %}>
+            🧭 Ruta docente
+          </a>
           <a href="{{ url_for('main.panel_docente') }}"
              class="nav-enlace {% if 'panel_docente' in request.endpoint %}activo{% endif %}"
              {% if 'panel_docente' in request.endpoint %}aria-current="page"{% endif %}>

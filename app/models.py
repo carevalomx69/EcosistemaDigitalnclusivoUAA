@@ -154,13 +154,20 @@ class SeccionModulo(db.Model):
     ruta_infografia      = db.Column(db.String(300))
     alt_text_infografia  = db.Column(db.Text)   # WCAG 1.1.1
 
-    @property
-    def completada(self):
-        """Indica si la sección tiene al menos contenido en texto."""
-        return bool(self.contenido_texto)
-
     def __repr__(self):
         return f'<Seccion {self.titulo}>'
+
+
+class ProgresoSeccion(db.Model):
+    """Registra que una persona marcó como completada una sección del módulo.
+    El progreso del módulo se calcula con estas filas (una por usuario y sección)."""
+    __tablename__ = 'progreso_secciones'
+    __table_args__ = (db.UniqueConstraint('usuario_id', 'seccion_id', name='uq_progreso_usuario_seccion'),)
+
+    id          = db.Column(db.Integer, primary_key=True)
+    usuario_id  = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    seccion_id  = db.Column(db.Integer, db.ForeignKey('secciones_modulo.id'), nullable=False)
+    completada_en = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # ── MODELO: ACTIVIDAD ──────────────────────────────────────────────────────
@@ -240,3 +247,45 @@ class TerminoGlosario(db.Model):
 
     def __repr__(self):
         return f'<Termino {self.termino}>'
+
+
+# ── MODELO: CURSO DEL DOCENTE (ruta docente, paso 1) ───────────────────────
+class CursoDocente(db.Model):
+    """
+    Curso que una persona docente quiere hacer más inclusivo.
+    Guarda datos de contexto del curso y las respuestas del diagnóstico.
+    No almacena datos de estudiantes (minimización de datos).
+    """
+    __tablename__ = 'cursos_docente'
+
+    id               = db.Column(db.Integer, primary_key=True)
+    docente_id       = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    nombre           = db.Column(db.String(150), nullable=False)
+    programa         = db.Column(db.String(150))
+    modalidad        = db.Column(db.String(20), default='presencial')  # presencial, hibrida, en_linea
+    num_estudiantes  = db.Column(db.Integer)
+    plataforma       = db.Column(db.String(100))
+    observaciones    = db.Column(db.Text)
+    creado           = db.Column(db.DateTime, default=datetime.utcnow)
+    # Respuestas del diagnóstico: JSON {id_item: 'si'|'parcial'|'no'|'no_se'}
+    diagnostico_json  = db.Column(db.Text)
+    diagnostico_fecha = db.Column(db.DateTime)
+
+    docente = db.relationship('Usuario', backref=db.backref('cursos', lazy='dynamic'))
+
+    @property
+    def respuestas_diagnostico(self):
+        import json
+        if not self.diagnostico_json:
+            return {}
+        try:
+            return json.loads(self.diagnostico_json)
+        except ValueError:
+            return {}
+
+    @property
+    def tiene_diagnostico(self):
+        return bool(self.diagnostico_json)
+
+    def __repr__(self):
+        return f'<CursoDocente {self.nombre}>'

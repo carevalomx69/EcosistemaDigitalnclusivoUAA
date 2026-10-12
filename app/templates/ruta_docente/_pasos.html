@@ -1,0 +1,15 @@
+{# Indicador de pasos de la ruta. Los pasos aún no disponibles no son enlaces. #}
+<nav aria-label="Pasos de la ruta docente">
+  <ol class="pasos">
+    {% for p in pasos %}
+    <li class="paso {% if p.disponible %}paso-activo{% else %}paso-pendiente{% endif %}"
+        {% if p.num == paso_actual|default(1) %}aria-current="step"{% endif %}>
+      <span class="paso-num" aria-hidden="true">{{ p.num }}</span>
+      <span class="paso-texto">
+        {{ p.titulo }}
+        {% if not p.disponible %}<span class="paso-nota">Próximamente</span>{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ol>
+</nav>

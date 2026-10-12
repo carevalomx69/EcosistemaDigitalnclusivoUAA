@@ -49,7 +49,9 @@ ecosistema/
 │   ├── __init__.py               # Application Factory de Flask
 │   ├── forms.py                  # Formularios Flask-WTF con validaciones
 │   ├── models.py                 # Modelos relacionales (Usuario, Grupo, Módulo, Actividad, etc.)
-│   └── routes.py                 # Rutas y controladores de la aplicación
+│   ├── routes.py                 # Rutas y controladores de la aplicación
+│   ├── ruta_docente.py           # Ruta docente: cursos, diagnóstico y resultado
+│   └── diagnostico.py            # Instrumento de diagnóstico y su puntuación (sin Flask)
 ├── instance/                     # Base de datos SQLite local (generada automáticamente)
 ├── requirements.txt              # Dependencias del proyecto
 ├── requirements-dev.txt          # Dependencias de pruebas
@@ -118,6 +120,19 @@ python -m pytest
 
 ---
 
+## 🧭 Ruta docente (en desarrollo)
+
+Recorrido guiado en cinco pasos para quien quiere iniciar con enseñanza inclusiva:
+1. Diagnóstico del curso (disponible)
+2. Planeación con DUA
+3. Creación o adaptación con criterios WCAG 2.2
+4. Verificación
+5. Cierre y resumen
+
+El diagnóstico es una autoevaluación orientativa de 14 afirmaciones organizadas por los tres
+principios del DUA. No es un instrumento validado; se afinará con el piloto. La ruta guarda datos
+del curso y respuestas del diagnóstico, nunca datos de estudiantes.
+
 ## 🔑 Cuentas de demostración
 
 Son cuentas ficticias. **Todas usan la contraseña de la variable de entorno
@@ -127,7 +142,7 @@ Son cuentas ficticias. **Todas usan la contraseña de la variable de entorno
 | Rol | Correo | Perfil de preferencias |
 | :--- | :--- | :--- |
 | Administrador | `admin@demo.example` | Panel de control global |
-| Docente | `docente@demo.example` | Grupos y seguimiento (la ruta del docente está en desarrollo) |
+| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente (paso 1: diagnóstico del curso) |
 | Estudiante | `alumno@demo.example` | Prefiere audio y ritmo lento |
 | Estudiante | `roberto@demo.example` | Texto grande y alto contraste |
 | Estudiante | `maria@demo.example` | Densidad reducida, sin audio |

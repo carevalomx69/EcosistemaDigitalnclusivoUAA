@@ -2,11 +2,12 @@
 ECOSISTEMA DIGITAL EDUCATIVO INCLUSIVO — UAA
 Rutas y controladores Flask
 """
+from types import SimpleNamespace
 from urllib.parse import urlparse
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, abort, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
-from app.models import Usuario, Grupo, Modulo, SeccionModulo, Actividad, RespuestaUsuario, TerminoGlosario
+from app.models import Usuario, Grupo, Modulo, SeccionModulo, Actividad, RespuestaUsuario, TerminoGlosario, ProgresoSeccion
 from app.forms import FormLogin, FormRegistro, FormPerfil, FormGrupo, FormUsuarioAdmin
 
 main = Blueprint('main', __name__)
@@ -93,81 +94,95 @@ def cerrar_sesion():
 
 
 # ── MÓDULO PEDAGÓGICO ──────────────────────────────────────────────────────
+def _glosario_activo():
+    glosario = TerminoGlosario.query.filter_by(activo=True).all()
+    if glosario:
+        return glosario
+    # Términos de respaldo si la base aún no tiene glosario
+    respaldo = [
+        ('DUA', 'Diseño Universal para el Aprendizaje (v3.0, CAST 2024). Marco pedagógico que propone diseñar entornos educativos anticipando la diversidad de los aprendices desde el origen.'),
+        ('WCAG', 'Web Content Accessibility Guidelines. Pautas del W3C para el diseño accesible de contenidos web. La versión 2.2 (2023) es el estándar actual con criterios de éxito en tres niveles: A, AA y AAA.'),
+        ('POUR', 'Acrónimo de los cuatro principios de WCAG: Perceptible, Operable, Comprensible y Robusto.'),
+    ]
+    return [SimpleNamespace(termino=t, definicion=d) for t, d in respaldo]
+
+
+def _ids_completadas(modulo_id):
+    """Conjunto de ids de sección que la persona actual marcó como completadas."""
+    filas = db.session.query(ProgresoSeccion.seccion_id).join(
+        SeccionModulo, SeccionModulo.id == ProgresoSeccion.seccion_id
+    ).filter(
+        ProgresoSeccion.usuario_id == current_user.id,
+        SeccionModulo.modulo_id == modulo_id,
+    ).all()
+    return {f[0] for f in filas}
+
+
 @main.route('/modulo')
 @login_required
 def modulo():
     modulo_activo = Modulo.query.filter_by(activo=True).first()
-    secciones = []
-    if modulo_activo:
-        secciones_db = modulo_activo.secciones.all()
-        for s in secciones_db:
-            completada = RespuestaUsuario.query.filter(
-                RespuestaUsuario.usuario_id == current_user.id
-            ).join(Actividad).filter(Actividad.modulo_id == modulo_activo.id).first() is not None
-            secciones.append({
-                'id': s.id, 'titulo': s.titulo,
-                'icono': s.icono, 'activa': False, 'completada': completada
-            })
-        if secciones:
-            secciones[0]['activa'] = True
-    else:
-        # Datos placeholder para la primera versión
-        secciones = [
-            {'id': 1, 'titulo': 'Introducción al módulo', 'icono': '📖', 'activa': True, 'completada': False},
-            {'id': 2, 'titulo': 'Los tres pilares del ecosistema', 'icono': '🏛️', 'activa': False, 'completada': False},
-            {'id': 3, 'titulo': 'DUA: Diseño Universal para el Aprendizaje', 'icono': '🎓', 'activa': False, 'completada': False},
-            {'id': 4, 'titulo': 'WCAG 2.2 en la práctica', 'icono': '♿', 'activa': False, 'completada': False},
-            {'id': 5, 'titulo': 'Perspectiva ecológica', 'icono': '🌐', 'activa': False, 'completada': False},
-            {'id': 6, 'titulo': 'Actividades de evaluación', 'icono': '✏️', 'activa': False, 'completada': False},
-        ]
+    glosario = _glosario_activo()
+    if not modulo_activo:
+        return render_template('modulo.html', modulo=None, secciones=[], seccion_actual=None,
+                               anterior=None, siguiente=None, progreso=0, glosario=glosario,
+                               n_completadas=0, actual_completada=False)
 
-    # Glosario del módulo
-    glosario = TerminoGlosario.query.filter_by(activo=True).all()
-    if not glosario:
-        # Términos placeholder
-        class _T:
-            pass
-        terminos_placeholder = [
-            ('DUA', 'Diseño Universal para el Aprendizaje (v3.0, CAST 2024). Marco pedagógico que propone diseñar entornos educativos anticipando la diversidad de los aprendices desde el origen.'),
-            ('WCAG', 'Web Content Accessibility Guidelines. Pautas del W3C para el diseño accesible de contenidos web. La versión 2.2 (2023) es el estándar actual con criterios de éxito en tres niveles: A, AA y AAA.'),
-            ('POUR', 'Acrónimo de los cuatro principios de WCAG: Perceptible, Operable, Comprensible y Robusto.'),
-            ('Ecosistema digital', 'Conjunto articulado de actores, tecnologías, prácticas pedagógicas e institucionales que configuran la experiencia educativa digital de manera interdependiente.'),
-            ('Microsistema', 'En el modelo de Bronfenbrenner, el entorno inmediato de interacción: plataforma digital, aula virtual, relación docente-estudiante.'),
-        ]
-        glosario = []
-        for termino, definicion in terminos_placeholder:
-            t = _T()
-            t.termino = termino
-            t.definicion = definicion
-            glosario.append(t)
+    secciones_db = modulo_activo.secciones.all()
+    completadas = _ids_completadas(modulo_activo.id)
 
-    # Calcular progreso
-    if modulo_activo:
-        total_act = modulo_activo.actividades.count()
-        completadas = RespuestaUsuario.query.filter_by(usuario_id=current_user.id).count()
-        progreso = round((completadas / total_act) * 100) if total_act > 0 else 0
-    else:
-        progreso = 0
+    # Sección a mostrar: ?seccion=<id>; si no existe o no es del módulo, la primera
+    # pendiente (o la primera si todas están completas).
+    pedida = request.args.get('seccion', type=int)
+    actual = next((s for s in secciones_db if s.id == pedida), None)
+    if actual is None and secciones_db:
+        actual = next((s for s in secciones_db if s.id not in completadas), secciones_db[0])
 
-    seccion_actual = None
-    if modulo_activo:
-        secciones_db = modulo_activo.secciones.all()
-        if secciones_db:
-            seccion_actual = secciones_db[0]
-    elif secciones:
-        class _Sec:
-            pass
-        seccion_actual = _Sec()
-        seccion_actual.titulo = secciones[0]['titulo']
-        seccion_actual.contenido_texto = '<p>Un <strong>Ecosistema Digital Educativo Inclusivo</strong> es un conjunto articulado de actores, tecnologías y prácticas pedagógicas...</p>'
+    indice = secciones_db.index(actual) if actual else 0
+    anterior = secciones_db[indice - 1] if actual and indice > 0 else None
+    siguiente = secciones_db[indice + 1] if actual and indice + 1 < len(secciones_db) else None
+
+    secciones = [{
+        'id': s.id, 'titulo': s.titulo, 'icono': s.icono,
+        'activa': s is actual, 'completada': s.id in completadas,
+    } for s in secciones_db]
+
+    total = len(secciones_db)
+    progreso = round(len(completadas) / total * 100) if total else 0
 
     return render_template('modulo.html',
         modulo=modulo_activo,
         secciones=secciones,
-        seccion_actual=seccion_actual,
+        seccion_actual=actual,
+        indice=indice + 1,
+        anterior=anterior,
+        siguiente=siguiente,
         glosario=glosario,
-        progreso=progreso
+        progreso=progreso,
+        n_completadas=len(completadas),
+        actual_completada=bool(actual and actual.id in completadas),
     )
+
+
+@main.route('/modulo/seccion/<int:seccion_id>/completar', methods=['POST'])
+@login_required
+def completar_seccion(seccion_id):
+    seccion = db.session.get(SeccionModulo, seccion_id)
+    if seccion is None:
+        abort(404)
+    existe = ProgresoSeccion.query.filter_by(
+        usuario_id=current_user.id, seccion_id=seccion.id).first()
+    if existe is None:
+        db.session.add(ProgresoSeccion(usuario_id=current_user.id, seccion_id=seccion.id))
+        db.session.commit()
+        flash(f'Sección completada: {seccion.titulo}', 'success')
+    siguiente = SeccionModulo.query.filter(
+        SeccionModulo.modulo_id == seccion.modulo_id,
+        SeccionModulo.orden > seccion.orden,
+    ).order_by(SeccionModulo.orden).first()
+    if siguiente:
+        return redirect(url_for('main.modulo', seccion=siguiente.id))
+    return redirect(url_for('main.modulo', seccion=seccion.id))
 
 
 @main.route('/actividad/<int:id>', methods=['GET', 'POST'])

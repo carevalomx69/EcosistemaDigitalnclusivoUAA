@@ -795,3 +795,27 @@ body {
   .controles-accesibilidad { margin-left: 0; padding-left: 0; border-left: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── RUTA DOCENTE ─────────────────────────────────────────────────────────── */
+.ruta-contenedor { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+.pasos { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: 1.5rem 0 0; }
+.paso { display: flex; align-items: center; gap: .5rem; padding: .5rem .85rem; border-radius: var(--radio);
+        border: 2px solid var(--uaa-azul); background: #FFFFFF; color: var(--uaa-azul); font-weight: 600; }
+.paso-pendiente { border-style: dashed; color: #4A4A4A; border-color: #6B6B6B; font-weight: 500; }
+.paso[aria-current="step"] { background: var(--uaa-azul); color: #FFFFFF; }
+.paso-num { display: inline-flex; width: 1.6rem; height: 1.6rem; border-radius: 50%; align-items: center;
+            justify-content: center; border: 2px solid currentColor; font-size: .85rem; }
+.paso-nota { display: block; font-size: .8rem; font-weight: 400; }
+.lista-cursos { list-style: none; padding: 0; margin: 0; }
+.curso-item { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;
+              padding: 1rem 0; border-bottom: 1px solid var(--borde-sutil); }
+.acciones-curso { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.afirmacion { border: 1px solid var(--borde-sutil); border-radius: var(--radio); padding: 1rem; margin: 1rem 0 0; }
+.afirmacion legend { font-weight: 600; padding: 0 .35rem; max-width: 100%; }
+.afirmacion-error { border: 2px solid var(--error-color); }
+.opciones-fila { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .5rem; }
+.opcion { display: inline-flex; align-items: center; gap: .4rem; cursor: pointer; min-height: 44px; }
+.opcion input { width: 20px; height: 20px; }
+.barras { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 1.25rem; }
+.barra-cabecera { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .25rem; margin-bottom: .35rem; }
+.sugerencias { padding-left: 1.25rem; display: grid; gap: 1.25rem; }

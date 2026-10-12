@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block titulo %}Agregar curso — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.inicio') }}">← Volver a la ruta docente</a></p>
+  <h1 class="panel-titulo">Agregar un curso</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Estos datos solo describen el contexto del curso. Los campos con
+    <span aria-hidden="true">*</span><span class="oculto-visual">asterisco</span> son obligatorios.
+  </p>
+
+  <div class="alerta alerta-aviso" style="max-width:70ch;">
+    Por privacidad, no escribas nombres de estudiantes ni información sobre su salud o discapacidad.
+    Este prototipo trabaja con el diseño del curso, no con datos personales del estudiantado.
+  </div>
+
+  <form method="post" class="card mt-md" style="max-width:70ch;" novalidate>
+    {{ form.hidden_tag() }}
+
+    <div class="campo-grupo">
+      <label class="campo-label" for="nombre">Nombre del curso <span class="requerido" aria-hidden="true">*</span></label>
+      <input class="campo-input" id="nombre" name="nombre" type="text" required
+             value="{{ form.nombre.data or '' }}"
+             {% if form.nombre.errors %}aria-invalid="true" aria-describedby="error-nombre"{% endif %}>
+      {% for e in form.nombre.errors %}<p class="campo-error" id="error-nombre">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label" for="programa">Programa educativo</label>
+      <input class="campo-input" id="programa" name="programa" type="text" value="{{ form.programa.data or '' }}">
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label" for="modalidad">Modalidad <span class="requerido" aria-hidden="true">*</span></label>
+      <select class="campo-select" id="modalidad" name="modalidad" required>
+        {% for valor, etiqueta in form.modalidad.choices %}
+        <option value="{{ valor }}" {% if form.modalidad.data == valor %}selected{% endif %}>{{ etiqueta }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label" for="num_estudiantes">Número aproximado de estudiantes</label>
+      <input class="campo-input" id="num_estudiantes" name="num_estudiantes" type="number" min="1" max="500"
+             value="{{ form.num_estudiantes.data if form.num_estudiantes.data is not none else '' }}"
+             {% if form.num_estudiantes.errors %}aria-invalid="true" aria-describedby="error-num"{% endif %}>
+      {% for e in form.num_estudiantes.errors %}<p class="campo-error" id="error-num">{{ e }}</p>{% endfor %}
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label" for="plataforma">Plataforma o herramientas que usas</label>
+      <input class="campo-input" id="plataforma" name="plataforma" type="text"
+             aria-describedby="ayuda-plataforma" value="{{ form.plataforma.data or '' }}">
+      <p class="campo-ayuda" id="ayuda-plataforma">Por ejemplo, Moodle, Teams, Google Classroom o correo.</p>
+    </div>
+
+    <div class="campo-grupo">
+      <label class="campo-label" for="observaciones">Qué te gustaría mejorar (opcional)</label>
+      <textarea class="campo-textarea" id="observaciones" name="observaciones" rows="4"
+                aria-describedby="ayuda-obs">{{ form.observaciones.data or '' }}</textarea>
+      <p class="campo-ayuda" id="ayuda-obs">Máximo 1000 caracteres.</p>
+    </div>
+
+    <button type="submit" class="btn btn-primario btn-lg">Guardar y continuar al diagnóstico</button>
+  </form>
+</div>
+{% endblock %}
