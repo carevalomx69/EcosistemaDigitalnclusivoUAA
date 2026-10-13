@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block titulo %}Decisiones de la unidad — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.plan', curso_id=curso.id) }}">← Volver al plan de {{ curso.nombre }}</a></p>
+  <h1 class="panel-titulo">Decisiones de la unidad: {{ unidad.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Marca todas las opciones que aplicarás en esta unidad. No tienes que elegir todas; basta con las que sean viables ahora.
+    Las que llevan la etiqueta «Sugerida por tu diagnóstico» atienden una afirmación que no marcaste como «Sí».
+  </p>
+
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <section class="card mt-lg" aria-labelledby="h-datos">
+      <h2 class="card-titulo" id="h-datos">Datos de la unidad</h2>
+      <div class="campo-grupo">
+        <label class="campo-label" for="nombre">Nombre de la unidad <span class="requerido" aria-hidden="true">*</span></label>
+        <input class="campo-input" id="nombre" name="nombre" type="text" required maxlength="150"
+               value="{{ form.nombre.data or '' }}"
+               {% if form.nombre.errors %}aria-invalid="true" aria-describedby="error-nombre"{% endif %}>
+        {% for e in form.nombre.errors %}<p class="campo-error" id="error-nombre">{{ e }}</p>{% endfor %}
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label" for="aprendizaje">Aprendizaje esperado (opcional)</label>
+        <input class="campo-input" id="aprendizaje" name="aprendizaje" type="text" maxlength="300"
+               value="{{ form.aprendizaje.data or '' }}">
+      </div>
+    </section>
+
+    {% for p in principios %}
+    <section class="card mt-lg" aria-labelledby="h-{{ p['id'] }}">
+      <h2 class="card-titulo" id="h-{{ p['id'] }}">{{ p['nombre'] }}</h2>
+      {% for d in p['decisiones'] %}
+      <fieldset class="afirmacion">
+        <legend>{{ d['pregunta'] }}</legend>
+        <div class="opciones-columna">
+          {% for valor, etiqueta, diag in d['opciones'] %}
+          <label class="opcion">
+            <input type="checkbox" name="{{ d['id'] }}" value="{{ valor }}"
+                   {% if valor in elegidas.get(d['id'], []) %}checked{% endif %}>
+            <span>{{ etiqueta }}
+              {% if diag and diag in sugeridas %}<span class="etiqueta-sugerida">Sugerida por tu diagnóstico</span>{% endif %}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      {% endfor %}
+    </section>
+    {% endfor %}
+
+    <section class="card mt-lg" aria-labelledby="h-notas">
+      <h2 class="card-titulo" id="h-notas">Notas</h2>
+      <div class="campo-grupo">
+        <label class="campo-label" for="notas">Compromisos, ideas o dudas para esta unidad (opcional)</label>
+        <textarea class="campo-textarea" id="notas" name="notas" rows="4" maxlength="1000"
+                  aria-describedby="ayuda-notas">{{ form.notas.data or '' }}</textarea>
+        <p class="campo-ayuda" id="ayuda-notas">Máximo 1000 caracteres. No incluyas datos de estudiantes.</p>
+      </div>
+    </section>
+
+    <p class="mt-lg"><button type="submit" class="btn btn-primario btn-lg">Guardar unidad</button></p>
+  </form>
+</div>
+{% endblock %}

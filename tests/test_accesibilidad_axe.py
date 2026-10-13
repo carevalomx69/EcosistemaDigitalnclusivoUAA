@@ -21,14 +21,15 @@ from werkzeug.serving import make_server  # noqa: E402
 from app import create_app, db  # noqa: E402
 import json  # noqa: E402
 from app.diagnostico import IDS_ITEMS  # noqa: E402
-from app.models import CursoDocente, Modulo, SeccionModulo, Usuario  # noqa: E402
+from app.models import CursoDocente, Modulo, SeccionModulo, UnidadPlan, Usuario  # noqa: E402
 
 AXE = (Path(__file__).parent / 'vendor' / 'axe.min.js').read_text(encoding='utf-8')
 ETIQUETAS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
 PUBLICAS = ['/login', '/registro', '/accesibilidad']
 PRIVADAS = ['/', '/modulo', '/modulo?seccion=2', '/panel/docente', '/perfil', '/actividad/1',
             '/ruta-docente/', '/ruta-docente/curso/nuevo',
-            '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado']
+            '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado',
+            '/ruta-docente/curso/1/plan', '/ruta-docente/curso/1/plan/unidad/1']
 
 
 @pytest.fixture(scope='module')
@@ -50,8 +51,12 @@ def servidor(tmp_path_factory):
         ])
         respuestas = {i: ('si' if n % 2 else 'parcial') for n, i in enumerate(IDS_ITEMS)}
         respuestas[IDS_ITEMS[0]] = 'no_se'
-        db.session.add(CursoDocente(docente_id=u.id, nombre='Curso de prueba',
-                                    diagnostico_json=json.dumps(respuestas)))
+        curso = CursoDocente(docente_id=u.id, nombre='Curso de prueba',
+                             diagnostico_json=json.dumps(respuestas))
+        db.session.add(curso)
+        db.session.flush()
+        db.session.add(UnidadPlan(curso_id=curso.id, orden=1, nombre='Unidad de prueba',
+                                  decisiones_json=json.dumps({'rep_formatos': ['texto']})))
         db.session.commit()
     srv = make_server('127.0.0.1', 0, app, threaded=True)
     hilo = threading.Thread(target=srv.serve_forever, daemon=True)

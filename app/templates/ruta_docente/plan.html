@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block titulo %}Planeación con DUA — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.inicio') }}">← Volver a la ruta docente</a></p>
+  <h1 class="panel-titulo">Planeación con DUA: {{ curso.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Divide el curso en unidades y, en cada una, decide cómo ofrecerás varias formas de representar la información,
+    de expresar lo aprendido y de implicar al estudiantado. Puedes avanzar unidad por unidad.
+  </p>
+
+  {% set paso_actual = 2 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  <section class="card mt-lg" aria-labelledby="h-prioridades">
+    <h2 class="card-titulo" id="h-prioridades">Lo que detectó tu diagnóstico</h2>
+    {% if resumen.sugerencias %}
+    <p>Estas son tus primeras mejoras sugeridas. En cada unidad verás marcadas las decisiones que las atienden.</p>
+    <ol>
+      {% for s in resumen.sugerencias %}<li>{{ s.texto }}</li>{% endfor %}
+    </ol>
+    {% else %}
+    <p>Respondiste «Sí» en todas las afirmaciones. Usa la planeación para dejar por escrito tus decisiones.</p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-unidades">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">🗂️</div>
+      <h2 class="card-titulo" id="h-unidades">Unidades del curso</h2>
+    </div>
+
+    {% if curso.unidades %}
+    <ul class="lista-cursos" role="list">
+      {% for u in curso.unidades %}
+      {% set n = decisiones_tomadas(u.elegidas) %}
+      <li class="curso-item">
+        <div>
+          <strong>{{ loop.index }}. {{ u.nombre }}</strong><br>
+          {% if u.aprendizaje %}<span class="texto-sutil">{{ u.aprendizaje }}</span><br>{% endif %}
+          <span class="badge {% if n == total %}badge-azul{% else %}badge-oro{% endif %}">
+            {{ n }} de {{ total }} decisiones tomadas
+          </span>
+        </div>
+        <div class="acciones-curso">
+          <a class="btn btn-primario btn-sm"
+             href="{{ url_for('ruta_docente.unidad', curso_id=curso.id, unidad_id=u.id) }}">
+            {{ 'Editar decisiones' if n else 'Tomar decisiones' }}<span class="oculto-visual"> de {{ u.nombre }}</span>
+          </a>
+          <form method="post"
+                action="{{ url_for('ruta_docente.unidad_eliminar', curso_id=curso.id, unidad_id=u.id) }}"
+                data-confirmar="¿Eliminar la unidad {{ u.nombre }}? Esta acción no se puede deshacer.">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-secundario btn-sm">Eliminar<span class="oculto-visual"> {{ u.nombre }}</span></button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Todavía no has agregado unidades. Empieza con la primera.</p>
+    {% endif %}
+
+    {% if curso.unidades|length < maximo %}
+    <form method="post" action="{{ url_for('ruta_docente.unidad_nueva', curso_id=curso.id) }}" class="mt-md" novalidate>
+      {{ form.hidden_tag() }}
+      <h3>Agregar una unidad</h3>
+      <div class="campo-grupo">
+        <label class="campo-label" for="nombre">Nombre de la unidad <span class="requerido" aria-hidden="true">*</span></label>
+        <input class="campo-input" id="nombre" name="nombre" type="text" required maxlength="150">
+      </div>
+      <div class="campo-grupo">
+        <label class="campo-label" for="aprendizaje">Aprendizaje esperado (opcional)</label>
+        <input class="campo-input" id="aprendizaje" name="aprendizaje" type="text" maxlength="300">
+      </div>
+      <button type="submit" class="btn btn-oro"><span aria-hidden="true">+</span> Agregar unidad</button>
+    </form>
+    {% else %}
+    <p class="alerta alerta-aviso">Alcanzaste el máximo de {{ maximo }} unidades de este prototipo.</p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-descarga">
+    <h2 class="card-titulo" id="h-descarga">Descargar el plan</h2>
+    <p>El plan incluye el contexto del curso, el resultado del diagnóstico y las decisiones de cada unidad.
+       Puedes descargarlo en cualquier momento, aunque esté incompleto.</p>
+    <p>
+      <a class="btn btn-primario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='docx') }}">
+        Descargar en Word (.docx)
+      </a>
+      <a class="btn btn-secundario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='md') }}">
+        Descargar en texto (.md)
+      </a>
+    </p>
+    <p class="texto-sutil">Siguiente paso de la ruta: Creación o adaptación con WCAG 2.2 (próximamente).</p>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.querySelectorAll('form[data-confirmar]').forEach(function (f) {
+  f.addEventListener('submit', function (e) {
+    if (!window.confirm(f.getAttribute('data-confirmar'))) e.preventDefault();
+  });
+});
+</script>
+{% endblock %}

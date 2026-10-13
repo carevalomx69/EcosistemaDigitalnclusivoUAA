@@ -51,7 +51,9 @@ ecosistema/
 │   ├── models.py                 # Modelos relacionales (Usuario, Grupo, Módulo, Actividad, etc.)
 │   ├── routes.py                 # Rutas y controladores de la aplicación
 │   ├── ruta_docente.py           # Ruta docente: cursos, diagnóstico y resultado
-│   └── diagnostico.py            # Instrumento de diagnóstico y su puntuación (sin Flask)
+│   ├── diagnostico.py            # Instrumento de diagnóstico y su puntuación (sin Flask)
+│   ├── planeacion.py             # Catálogo de decisiones DUA por unidad (sin Flask)
+│   └── plan_export.py            # Exportación del plan a Word y Markdown
 ├── instance/                     # Base de datos SQLite local (generada automáticamente)
 ├── requirements.txt              # Dependencias del proyecto
 ├── requirements-dev.txt          # Dependencias de pruebas
@@ -124,7 +126,7 @@ python -m pytest
 
 Recorrido guiado en cinco pasos para quien quiere iniciar con enseñanza inclusiva:
 1. Diagnóstico del curso (disponible)
-2. Planeación con DUA
+2. Planeación con DUA (disponible): unidades del curso, 8 decisiones por unidad ligadas al diagnóstico y plan descargable en Word (.docx) o texto (.md)
 3. Creación o adaptación con criterios WCAG 2.2
 4. Verificación
 5. Cierre y resumen
@@ -142,7 +144,7 @@ Son cuentas ficticias. **Todas usan la contraseña de la variable de entorno
 | Rol | Correo | Perfil de preferencias |
 | :--- | :--- | :--- |
 | Administrador | `admin@demo.example` | Panel de control global |
-| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente (paso 1: diagnóstico del curso) |
+| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente (pasos 1 y 2) |
 | Estudiante | `alumno@demo.example` | Prefiere audio y ritmo lento |
 | Estudiante | `roberto@demo.example` | Texto grande y alto contraste |
 | Estudiante | `maria@demo.example` | Densidad reducida, sin audio |

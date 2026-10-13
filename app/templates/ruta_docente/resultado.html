@@ -62,6 +62,8 @@
   <p class="mt-lg">
     <a class="btn btn-secundario" href="{{ url_for('ruta_docente.diagnostico', curso_id=curso.id) }}">Repetir el diagnóstico</a>
   </p>
-  <p class="texto-sutil">Siguiente paso de la ruta: Planeación con DUA (próximamente).</p>
+  <p class="mt-md">
+    <a class="btn btn-oro" href="{{ url_for('ruta_docente.plan', curso_id=curso.id) }}">Siguiente: Planeación con DUA <span aria-hidden="true">→</span></a>
+  </p>
 </div>
 {% endblock %}

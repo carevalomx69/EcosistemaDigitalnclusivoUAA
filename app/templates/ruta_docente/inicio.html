@@ -6,7 +6,7 @@
   <h1 class="panel-titulo">Ruta docente hacia la enseñanza inclusiva</h1>
   <p class="texto-sutil" style="max-width:70ch;">
     Un recorrido en cinco pasos para empezar a hacer más inclusivo uno de tus cursos.
-    Por ahora está disponible el primer paso. Los demás se irán habilitando durante el desarrollo del prototipo.
+    Por ahora están disponibles los pasos 1 y 2. Los demás se irán habilitando durante el desarrollo del prototipo.
   </p>
 
   {% set paso_actual = 1 %}
@@ -29,6 +29,7 @@
             · {{ {'presencial': 'Presencial', 'hibrida': 'Híbrida', 'en_linea': 'En línea'}.get(c.modalidad, c.modalidad) }}
           </span><br>
           {% if c.tiene_diagnostico %}
+            <span class="badge badge-azul">{{ c.unidades|length }} unidad(es) planeada(s)</span>
             <span class="badge badge-azul">Diagnóstico completado el {{ (c.diagnostico_fecha or c.creado).strftime('%d/%m/%Y') }}</span>
           {% else %}
             <span class="badge badge-oro">Diagnóstico pendiente</span>
@@ -36,6 +37,9 @@
         </div>
         <div class="acciones-curso">
           {% if c.tiene_diagnostico %}
+          <a class="btn btn-oro btn-sm" href="{{ url_for('ruta_docente.plan', curso_id=c.id) }}">
+            Planear con DUA<span class="oculto-visual"> {{ c.nombre }}</span>
+          </a>
           <a class="btn btn-primario btn-sm" href="{{ url_for('ruta_docente.resultado', curso_id=c.id) }}">
             Ver resultado<span class="oculto-visual"> de {{ c.nombre }}</span>
           </a>

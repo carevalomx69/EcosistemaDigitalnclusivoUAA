@@ -272,6 +272,8 @@ class CursoDocente(db.Model):
     diagnostico_fecha = db.Column(db.DateTime)
 
     docente = db.relationship('Usuario', backref=db.backref('cursos', lazy='dynamic'))
+    unidades = db.relationship('UnidadPlan', backref='curso', order_by='UnidadPlan.orden',
+                               cascade='all, delete-orphan')
 
     @property
     def respuestas_diagnostico(self):
@@ -289,3 +291,32 @@ class CursoDocente(db.Model):
 
     def __repr__(self):
         return f'<CursoDocente {self.nombre}>'
+
+
+# ── MODELO: UNIDAD DEL PLAN (ruta docente, paso 2) ─────────────────────────
+class UnidadPlan(db.Model):
+    """Unidad de un curso con las decisiones de diseño DUA que tomó la persona docente."""
+    __tablename__ = 'unidades_plan'
+
+    id           = db.Column(db.Integer, primary_key=True)
+    curso_id     = db.Column(db.Integer, db.ForeignKey('cursos_docente.id'), nullable=False)
+    orden        = db.Column(db.Integer, default=0)
+    nombre       = db.Column(db.String(150), nullable=False)
+    aprendizaje  = db.Column(db.String(300))
+    # Decisiones: JSON {id_decision: [valores elegidos]}
+    decisiones_json = db.Column(db.Text)
+    notas        = db.Column(db.Text)
+    actualizado  = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @property
+    def elegidas(self):
+        import json
+        if not self.decisiones_json:
+            return {}
+        try:
+            return json.loads(self.decisiones_json)
+        except ValueError:
+            return {}
+
+    def __repr__(self):
+        return f'<UnidadPlan {self.nombre}>'

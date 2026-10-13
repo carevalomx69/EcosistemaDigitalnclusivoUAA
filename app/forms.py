@@ -84,3 +84,10 @@ class FormCurso(FlaskForm):
 class FormVacio(FlaskForm):
     """Formulario sin campos, solo para validar el token CSRF."""
     pass
+
+
+class FormUnidad(FlaskForm):
+    """Unidad de un curso (ruta docente, paso 2)."""
+    nombre = StringField('Nombre de la unidad', validators=[DataRequired(), Length(3, 150)])
+    aprendizaje = StringField('Aprendizaje esperado (opcional)', validators=[Optional(), Length(max=300)])
+    notas = TextAreaField('Notas (opcional)', validators=[Optional(), Length(max=1000)])

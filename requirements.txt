@@ -7,3 +7,4 @@ sqlalchemy>=2.0.0
 wtforms>=3.0.0
 email_validator>=2.0.0
 gunicorn>=23.0.0
+python-docx==1.2.0
