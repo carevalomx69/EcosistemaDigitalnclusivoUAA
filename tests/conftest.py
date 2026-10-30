@@ -1,5 +1,7 @@
 import re
 import pytest
+from datetime import datetime
+from app.aviso import VERSION_AVISO
 
 from app import create_app, db
 from app.models import Usuario
@@ -13,7 +15,8 @@ def app():
     })
     with app.app_context():
         db.create_all()
-        usuario = Usuario(nombre='Docente', apellidos='Prueba',
+        usuario = Usuario(aviso_aceptado_en=datetime.utcnow(), aviso_version=VERSION_AVISO,
+                          nombre='Docente', apellidos='Prueba',
                           correo='docente@demo.example', rol='docente')
         usuario.establecer_contrasena('clave-de-prueba-1')
         db.session.add(usuario)

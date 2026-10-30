@@ -14,6 +14,8 @@ import threading
 from pathlib import Path
 
 import pytest
+from datetime import datetime
+from app.aviso import VERSION_AVISO
 
 sync_api = pytest.importorskip('playwright.sync_api')
 from werkzeug.serving import make_server  # noqa: E402
@@ -25,7 +27,7 @@ from app.models import CursoDocente, Modulo, SeccionModulo, UnidadPlan, Usuario 
 
 AXE = (Path(__file__).parent / 'vendor' / 'axe.min.js').read_text(encoding='utf-8')
 ETIQUETAS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice']
-PUBLICAS = ['/login', '/registro', '/accesibilidad']
+PUBLICAS = ['/login', '/registro', '/accesibilidad', '/privacidad']
 PRIVADAS = ['/', '/modulo', '/modulo?seccion=2', '/panel/docente', '/perfil', '/actividad/1',
             '/ruta-docente/', '/ruta-docente/curso/nuevo',
             '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado',
@@ -37,10 +39,14 @@ def servidor(tmp_path_factory):
     bd = tmp_path_factory.mktemp('bd') / 'axe.db'
     app = create_app({'SQLALCHEMY_DATABASE_URI': f'sqlite:///{bd}', 'TESTING': True})
     with app.app_context():
-        u = Usuario(nombre='Docente', apellidos='Prueba',
+        u = Usuario(aviso_aceptado_en=datetime.utcnow(), aviso_version=VERSION_AVISO,
+                          nombre='Docente', apellidos='Prueba',
                     correo='docente@demo.example', rol='docente')
         u.establecer_contrasena('clave-de-prueba-1')
         db.session.add(u)
+        sin = Usuario(nombre='Sin', apellidos='Aceptar', correo='sin@demo.example', rol='estudiante')
+        sin.establecer_contrasena('clave-de-prueba-1')
+        db.session.add(sin)
         db.session.flush()
         m = Modulo(titulo='Módulo de prueba', activo=True)
         db.session.add(m)
@@ -80,11 +86,11 @@ def navegador():
         nav.close()
 
 
-def abrir_sesion(navegador, servidor, ancho=1280):
+def abrir_sesion(navegador, servidor, ancho=1280, correo='docente@demo.example'):
     ctx = navegador.new_context(viewport={'width': ancho, 'height': 900})
     pagina = ctx.new_page()
     pagina.goto(servidor + '/login')
-    pagina.fill('input[name=correo]', 'docente@demo.example')
+    pagina.fill('input[name=correo]', correo)
     pagina.fill('input[name=contrasena]', 'clave-de-prueba-1')
     with pagina.expect_navigation():
         pagina.click('button[type=submit], input[type=submit]')
@@ -136,3 +142,12 @@ def test_ajuste_de_texto_se_conserva_al_navegar(navegador, servidor):
         pagina.click('button:has-text("A+")')
     pagina.goto(servidor + '/')
     assert 'texto-grande' in pagina.evaluate('document.body.className')
+
+
+def test_axe_y_reflujo_en_la_pantalla_de_aceptacion(navegador, servidor):
+    for ancho in (1280, 320):
+        pagina = abrir_sesion(navegador, servidor, ancho=ancho, correo='sin@demo.example')
+        assert '/aviso/aceptar' in pagina.url
+        assert violaciones_axe(pagina) == []
+        medidas = pagina.evaluate('[document.documentElement.scrollWidth, document.documentElement.clientWidth]')
+        assert medidas[0] <= medidas[1]

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block titulo %}Antes de continuar — Aviso de privacidad{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <h1 class="panel-titulo">Antes de continuar</h1>
+  <p style="max-width:70ch;">
+    Esta plataforma es un prototipo de una investigación doctoral. Para usarla necesitamos que conozcas qué datos guarda y para qué.
+  </p>
+
+  <form method="post" class="card" style="max-width:70ch;" novalidate>
+    {{ form.hidden_tag() }}
+    <h2>En resumen</h2>
+    <ul>
+      <li>Guardamos tu cuenta, tus preferencias de accesibilidad y tu avance.</li>
+      <li>No pedimos ni guardamos diagnósticos médicos ni datos de estudiantes.</li>
+      <li>No compartimos tus datos con terceros.</li>
+    </ul>
+    <p><a href="{{ url_for('main.privacidad') }}" target="_blank" rel="noopener">Leer el aviso de privacidad completo<span class="oculto-visual"> (se abre en una pestaña nueva)</span></a></p>
+
+    {% if error %}<p class="campo-error" id="error-acepto" role="alert">{{ error }}</p>{% endif %}
+
+    <div class="campo-grupo">
+      <label class="opcion">
+        <input type="checkbox" name="acepto_aviso" value="1" required
+               {% if error %}aria-invalid="true" aria-describedby="error-acepto"{% endif %}>
+        <span>He leído y acepto el aviso de privacidad. <span class="requerido" aria-hidden="true">*</span></span>
+      </label>
+    </div>
+    <div class="campo-grupo">
+      <label class="opcion">
+        <input type="checkbox" name="consiente_investigacion" value="1"
+               {% if current_user.consiente_investigacion %}checked{% endif %}>
+        <span>Autorizo que mis datos se usen de forma anónima y agregada para evaluar el prototipo en la investigación (opcional).</span>
+      </label>
+    </div>
+
+    <p>
+      <button type="submit" class="btn btn-primario btn-lg">Continuar</button>
+      <a class="btn btn-secundario btn-lg" href="{{ url_for('main.cerrar_sesion') }}">No acepto, cerrar sesión</a>
+    </p>
+  </form>
+</div>
+{% endblock %}

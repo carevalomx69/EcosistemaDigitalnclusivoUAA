@@ -36,6 +36,11 @@ class Usuario(UserMixin, db.Model):
     creado          = db.Column(db.DateTime, default=datetime.utcnow)
     grupo_id        = db.Column(db.Integer, db.ForeignKey('grupos.id'), nullable=True)
 
+    # ── Aviso de privacidad y consentimiento ──
+    aviso_aceptado_en       = db.Column(db.DateTime)
+    aviso_version           = db.Column(db.String(30))
+    consiente_investigacion = db.Column(db.Boolean, default=False, nullable=False, server_default='0')
+
     # ── Perfil de preferencias de accesibilidad (no diagnóstico médico) ──
     # Microsistema: la interfaz se adapta dinámicamente a estas preferencias
     pref_tamano_texto    = db.Column(db.String(20), default='normal')
@@ -97,16 +102,22 @@ class Grupo(db.Model):
 
     @property
     def progreso_promedio(self):
-        """Calcula el progreso promedio de todos los estudiantes del grupo."""
-        from sqlalchemy import func
-        total = self.estudiantes.count()
-        if total == 0:
+        """Porcentaje promedio de secciones completadas del módulo activo por los
+        estudiantes del grupo (secciones completadas / (estudiantes x secciones))."""
+        total_estudiantes = self.estudiantes.count()
+        modulo = Modulo.query.filter_by(activo=True).first()
+        if total_estudiantes == 0 or modulo is None:
             return 0
-        completadas = db.session.query(func.count(RespuestaUsuario.id)).join(Usuario).filter(
-            Usuario.grupo_id == self.id
-        ).scalar() or 0
-        total_actividades = Actividad.query.count() or 1
-        return round((completadas / (total * total_actividades)) * 100)
+        ids_secciones = [s.id for s in modulo.secciones.all()]
+        if not ids_secciones:
+            return 0
+        completadas = ProgresoSeccion.query.join(
+            Usuario, Usuario.id == ProgresoSeccion.usuario_id
+        ).filter(
+            Usuario.grupo_id == self.id,
+            ProgresoSeccion.seccion_id.in_(ids_secciones),
+        ).count()
+        return round(completadas / (total_estudiantes * len(ids_secciones)) * 100)
 
     def __repr__(self):
         return f'<Grupo {self.nombre}>'

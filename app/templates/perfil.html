@@ -84,6 +84,18 @@
         </div>
       </fieldset>
 
+      <fieldset style="border:none;padding:0;margin-bottom:1.5rem;">
+        <legend class="campo-label">Privacidad e investigación</legend>
+        <label class="opcion">
+          <input type="checkbox" name="consiente_investigacion" value="1"
+                 {{ 'checked' if current_user.consiente_investigacion }}>
+          <span>Autorizo que mis datos se usen de forma anónima y agregada para evaluar el prototipo en la investigación.</span>
+        </label>
+        <p class="campo-ayuda">
+          Puedes cambiar esta decisión cuando quieras. Lee el <a href="{{ url_for('main.privacidad') }}">aviso de privacidad</a>.
+        </p>
+      </fieldset>
+
       <button type="submit" class="btn btn-primario btn-lg">
         Guardar preferencias
       </button>

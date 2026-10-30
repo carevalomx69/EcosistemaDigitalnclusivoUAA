@@ -22,6 +22,32 @@ def _uri_base_de_datos():
     return uri
 
 
+# Columnas agregadas después de la primera versión. create_all() no modifica tablas
+# existentes, así que una base de datos anterior (por ejemplo, el volumen de Docker
+# o el disco de Render) las recibe aquí sin perder datos.
+COLUMNAS_NUEVAS = {
+    'usuarios': [
+        ('aviso_aceptado_en', 'TIMESTAMP'),
+        ('aviso_version', 'VARCHAR(30)'),
+        ('consiente_investigacion', 'BOOLEAN NOT NULL DEFAULT 0'),
+    ],
+}
+
+
+def _agregar_columnas_faltantes():
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    for tabla, columnas in COLUMNAS_NUEVAS.items():
+        if not inspector.has_table(tabla):
+            continue
+        existentes = {c['name'] for c in inspector.get_columns(tabla)}
+        for nombre, tipo in columnas:
+            if nombre not in existentes:
+                valor = tipo.replace('DEFAULT 0', 'DEFAULT false') if db.engine.dialect.name == 'postgresql' else tipo
+                with db.engine.begin() as conexion:
+                    conexion.execute(text(f'ALTER TABLE {tabla} ADD COLUMN {nombre} {valor}'))
+
+
 def create_app(config=None):
     app = Flask(__name__)
 
@@ -78,6 +104,12 @@ def create_app(config=None):
                 'Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
         return respuesta
 
+    # Datos del aviso de privacidad (se completan con variables de entorno)
+    @app.context_processor
+    def datos_del_aviso():
+        from app.aviso import contexto_aviso
+        return {'aviso': contexto_aviso()}
+
     # Registrar blueprint
     from app.routes import main
     app.register_blueprint(main)
@@ -87,5 +119,6 @@ def create_app(config=None):
     # Crear tablas al inicio
     with app.app_context():
         db.create_all()
+        _agregar_columnas_faltantes()
 
     return app

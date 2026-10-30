@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titulo %}Aviso de privacidad — Ecosistema Educativo Inclusivo UAA{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <h1 class="panel-titulo">Aviso de privacidad</h1>
+  <p class="texto-sutil">Versión {{ aviso.version }}</p>
+
+  {% if aviso.borrador %}
+  <p class="alerta alerta-aviso" style="max-width:75ch;">
+    Este texto es un borrador de trabajo del prototipo. Debe ser revisado por la instancia universitaria
+    competente antes de usar la plataforma con personas reales.
+  </p>
+  {% endif %}
+
+  <div class="card" style="max-width:75ch;">
+    <h2>Quién es responsable</h2>
+    <p>{{ aviso.responsable }}. Esta plataforma es un prototipo desarrollado en el marco de una investigación doctoral en la Universidad Autónoma de Aguascalientes.</p>
+
+    <h2>Qué datos se recogen</h2>
+    <ul>
+      <li>De tu cuenta: nombre, apellidos, correo, rol, carrera y grupo. La contraseña se guarda cifrada y nadie puede leerla.</li>
+      <li>Tus preferencias de accesibilidad: tamaño de texto, contraste, velocidad de audio, densidad de información y formatos preferidos.</li>
+      <li>Tu uso del módulo: las secciones que marcas como completadas y tus respuestas a las actividades.</li>
+      <li>Si eres docente: los datos de tus cursos (nombre, programa, modalidad, plataforma, número aproximado de estudiantes y observaciones), las respuestas del diagnóstico, tus unidades, tus decisiones de planeación y tus notas.</li>
+      <li>Una cookie de sesión, necesaria para mantener tu sesión iniciada. No se usan cookies de publicidad ni de análisis de terceros.</li>
+    </ul>
+
+    <h2>Qué no se recoge</h2>
+    <ul>
+      <li>No se piden ni se guardan diagnósticos médicos ni información sobre discapacidad. Las preferencias son elecciones tuyas sobre cómo prefieres ver el contenido.</li>
+      <li>La ruta docente no guarda datos de estudiantes. Te pedimos no escribirlos en los campos de texto libre.</li>
+    </ul>
+
+    <h2>Para qué se usan</h2>
+    <p><strong>Finalidad necesaria.</strong> Dar acceso a la plataforma, adaptar la interfaz a tus preferencias, guardar tu avance y, en el caso docente, guardar tus cursos y planes.</p>
+    <p><strong>Finalidad opcional.</strong> Evaluar el prototipo en la investigación doctoral (accesibilidad, usabilidad y pertinencia pedagógica). Solo se usarán tus datos para esto si lo autorizas, y los resultados se reportarán de forma anónima y agregada. Puedes cambiar esta decisión en cualquier momento desde tu perfil. Negarte no afecta tu acceso a la plataforma.</p>
+
+    <h2>Con quién se comparten</h2>
+    <p>Tus datos no se venden ni se comparten con terceros. El prototipo se aloja en un servicio de nube, que almacena los datos como proveedor técnico: {{ aviso.alojamiento }}.</p>
+
+    <h2>Cuánto tiempo se conservan</h2>
+    <p>{{ aviso.conservacion }}. Al terminar ese periodo, los datos se eliminan o se anonimizan.</p>
+
+    <h2>Tus derechos</h2>
+    <p>Puedes pedir acceso a tus datos, corregirlos, cancelarlos u oponerte a su uso. Para hacerlo, escribe a: {{ aviso.contacto }}.</p>
+
+    <h2>Cambios a este aviso</h2>
+    <p>Si el aviso cambia, se publicará en esta página con una nueva versión y se te pedirá aceptarlo de nuevo al iniciar sesión.</p>
+  </div>
+
+  <p class="mt-md"><a href="{{ url_for('main.inicio') }}">← Volver al inicio</a></p>
+</div>
+{% endblock %}

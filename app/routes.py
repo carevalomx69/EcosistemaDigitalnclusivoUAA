@@ -8,7 +8,9 @@ from flask import Blueprint, abort, render_template, redirect, url_for, flash, r
 from flask_login import login_user, logout_user, login_required, current_user
 from app import db
 from app.models import Usuario, Grupo, Modulo, SeccionModulo, Actividad, RespuestaUsuario, TerminoGlosario, ProgresoSeccion
-from app.forms import FormLogin, FormRegistro, FormPerfil, FormGrupo, FormUsuarioAdmin
+from datetime import datetime
+from app.aviso import VERSION_AVISO, aviso_al_dia
+from app.forms import FormLogin, FormRegistro, FormPerfil, FormGrupo, FormUsuarioAdmin, FormVacio
 
 main = Blueprint('main', __name__)
 
@@ -24,6 +26,48 @@ def _destino_seguro(destino):
     if partes.scheme or partes.netloc or not destino.startswith('/') or destino.startswith('//') or '\\' in destino:
         return None
     return destino
+
+
+# ── AVISO DE PRIVACIDAD ────────────────────────────────────────────────────
+# Rutas que se pueden abrir sin haber aceptado el aviso vigente
+RUTAS_SIN_AVISO = {'static', 'main.privacidad', 'main.aviso_aceptar',
+                   'main.cerrar_sesion', 'main.accesibilidad'}
+
+
+@main.before_app_request
+def exigir_aviso_aceptado():
+    """Quien inicia sesión debe aceptar la versión vigente del aviso antes de usar la plataforma."""
+    if not current_user.is_authenticated or request.endpoint is None:
+        return None
+    if request.endpoint in RUTAS_SIN_AVISO or aviso_al_dia(current_user):
+        return None
+    destino = request.path if request.method == 'GET' else None
+    return redirect(url_for('main.aviso_aceptar', next=destino))
+
+
+@main.route('/privacidad')
+def privacidad():
+    return render_template('privacidad.html')
+
+
+@main.route('/aviso/aceptar', methods=['GET', 'POST'])
+@login_required
+def aviso_aceptar():
+    siguiente = _destino_seguro(request.args.get('next'))
+    if aviso_al_dia(current_user):
+        return redirect(siguiente or url_for('main.inicio'))
+    form = FormVacio()
+    error = None
+    if form.validate_on_submit():
+        if request.form.get('acepto_aviso') != '1':
+            error = 'Para continuar necesitas aceptar el aviso de privacidad.'
+        else:
+            current_user.aviso_aceptado_en = datetime.utcnow()
+            current_user.aviso_version = VERSION_AVISO
+            current_user.consiente_investigacion = request.form.get('consiente_investigacion') == '1'
+            db.session.commit()
+            return redirect(siguiente or url_for('main.inicio'))
+    return render_template('aviso_aceptar.html', form=form, error=error)
 
 
 # ── INICIO ─────────────────────────────────────────────────────────────────
@@ -59,6 +103,10 @@ def registro():
             flash('Ya existe una cuenta con ese correo.', 'error')
             return render_template('registro.html', form=form)
 
+        if request.form.get('acepto_aviso') != '1':
+            flash('Para crear tu cuenta necesitas aceptar el aviso de privacidad.', 'error')
+            return render_template('registro.html', form=form)
+
         # Recoger formatos preferidos del formulario
         formatos = request.form.getlist('pref_formatos')
         formatos_str = ','.join(formatos) if formatos else 'texto'
@@ -69,6 +117,9 @@ def registro():
             correo          = form.correo.data.lower().strip(),
             carrera         = form.carrera.data,
             rol             = 'estudiante',
+            aviso_aceptado_en       = datetime.utcnow(),
+            aviso_version           = VERSION_AVISO,
+            consiente_investigacion = request.form.get('consiente_investigacion') == '1',
             # Preferencias de accesibilidad del perfil inicial
             pref_tamano_texto    = request.form.get('pref_tamano_texto', 'normal'),
             pref_contraste       = request.form.get('pref_contraste', 'normal'),
@@ -253,6 +304,7 @@ def mi_perfil():
         current_user.pref_contraste       = request.form.get('pref_contraste', 'normal')
         current_user.pref_velocidad_audio = float(request.form.get('pref_velocidad_audio', 1.0))
         current_user.pref_densidad        = request.form.get('pref_densidad', 'normal')
+        current_user.consiente_investigacion = request.form.get('consiente_investigacion') == '1'
         db.session.commit()
         flash('Preferencias guardadas correctamente.', 'success')
         return redirect(url_for('main.mi_perfil'))

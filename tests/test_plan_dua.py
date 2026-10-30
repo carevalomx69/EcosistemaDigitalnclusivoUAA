@@ -4,6 +4,8 @@ import json
 
 from docx import Document
 
+from datetime import datetime
+from app.aviso import VERSION_AVISO
 from app import db
 from app.diagnostico import IDS_ITEMS
 from app.models import CursoDocente, UnidadPlan, Usuario
@@ -129,7 +131,8 @@ def test_limite_de_unidades(client, app):
 
 def test_unidad_y_curso_ajenos_responden_404(client, app):
     with app.app_context():
-        otro = Usuario(nombre='Otro', apellidos='Docente', correo='otro@demo.example', rol='docente')
+        otro = Usuario(aviso_aceptado_en=datetime.utcnow(), aviso_version=VERSION_AVISO,
+                          nombre='Otro', apellidos='Docente', correo='otro@demo.example', rol='docente')
         otro.establecer_contrasena('clave-de-prueba-2')
         db.session.add(otro)
         db.session.commit()

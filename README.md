@@ -169,6 +169,26 @@ Para una demostración conviene abrir la página unos minutos antes.
 
 ---
 
+## 🔏 Aviso de privacidad y consentimiento
+
+La plataforma incluye un aviso de privacidad (`/privacidad`). Al iniciar sesión por primera vez, cada
+persona debe aceptarlo. También se ofrece un consentimiento aparte y opcional para usar sus datos, de forma
+anónima y agregada, en la evaluación del prototipo; se puede retirar desde el perfil.
+
+El texto es un **borrador de trabajo** y debe revisarlo la instancia universitaria competente antes de un
+piloto con personas reales. Los datos institucionales se configuran con variables de entorno:
+
+| Variable | Contenido |
+|---|---|
+| `AVISO_RESPONSABLE` | Responsable del tratamiento de datos |
+| `AVISO_CONTACTO` | Medio para ejercer los derechos de acceso, rectificación, cancelación y oposición |
+| `AVISO_ALOJAMIENTO` | Proveedor y ubicación del servicio donde se guardan los datos |
+| `AVISO_CONSERVACION` | Periodo de conservación y qué ocurre después |
+| `AVISO_BORRADOR=0` | Oculta la advertencia de borrador cuando el texto esté aprobado |
+
+Para obligar a todas las personas a aceptar de nuevo el aviso tras un cambio, edita `VERSION_AVISO` en `app/aviso.py`.
+Las bases de datos anteriores reciben las columnas nuevas de forma automática al arrancar, sin perder datos.
+
 ## 🔒 Seguridad y privacidad
 
 - `SECRET_KEY` es obligatoria cuando `APP_ENV=production`; sin ella la aplicación no arranca.

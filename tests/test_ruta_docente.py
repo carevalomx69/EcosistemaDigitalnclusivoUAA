@@ -1,5 +1,7 @@
 """Ruta docente, paso 1: cursos, diagnóstico y resultado."""
 import pytest
+from datetime import datetime
+from app.aviso import VERSION_AVISO
 
 from app import db
 from app.diagnostico import IDS_ITEMS, PRINCIPIOS, evaluar, faltantes
@@ -9,7 +11,8 @@ from conftest import token_csrf
 
 def crear_usuario(app, correo, rol):
     with app.app_context():
-        u = Usuario(nombre='Otra', apellidos='Persona', correo=correo, rol=rol)
+        u = Usuario(aviso_aceptado_en=datetime.utcnow(), aviso_version=VERSION_AVISO,
+                          nombre='Otra', apellidos='Persona', correo=correo, rol=rol)
         u.establecer_contrasena('clave-de-prueba-2')
         db.session.add(u)
         db.session.commit()

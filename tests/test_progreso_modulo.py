@@ -1,5 +1,7 @@
 """Progreso por sección del módulo: cada sección se marca de forma independiente."""
 import pytest
+from datetime import datetime
+from app.aviso import VERSION_AVISO
 
 from app import db
 from app.models import Modulo, ProgresoSeccion, SeccionModulo, Usuario
@@ -60,7 +62,8 @@ def test_completar_dos_veces_no_duplica(client, app, modulo_con_secciones):
 
 def test_el_progreso_es_por_persona(client, app, modulo_con_secciones):
     with app.app_context():
-        otro = Usuario(nombre='Otra', apellidos='Persona', correo='otra@demo.example', rol='estudiante')
+        otro = Usuario(aviso_aceptado_en=datetime.utcnow(), aviso_version=VERSION_AVISO,
+                          nombre='Otra', apellidos='Persona', correo='otra@demo.example', rol='estudiante')
         otro.establecer_contrasena('clave-de-prueba-2')
         db.session.add(otro)
         db.session.commit()

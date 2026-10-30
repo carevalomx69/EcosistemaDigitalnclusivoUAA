@@ -7,6 +7,10 @@ services:
     environment:
       # Contraseña de las cuentas de demostración (cámbiala si quieres)
       DEMO_PASSWORD: ${DEMO_PASSWORD:-demo-local-2026}
+      AVISO_RESPONSABLE: ${AVISO_RESPONSABLE:-}
+      AVISO_CONTACTO: ${AVISO_CONTACTO:-}
+      AVISO_ALOJAMIENTO: ${AVISO_ALOJAMIENTO:-}
+      AVISO_CONSERVACION: ${AVISO_CONSERVACION:-}
     volumes:
       - datos:/app/instance
 

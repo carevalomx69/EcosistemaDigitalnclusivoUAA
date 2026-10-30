@@ -17,5 +17,14 @@ services:
       # servicio y se consulta en el panel de Render (Environment).
       - key: DEMO_PASSWORD
         generateValue: true
+      # Datos del aviso de privacidad. Complétalos en el panel de Render antes de un piloto.
+      - key: AVISO_RESPONSABLE
+        sync: false
+      - key: AVISO_CONTACTO
+        sync: false
+      - key: AVISO_ALOJAMIENTO
+        value: Render (servicio de nube de terceros)
+      - key: AVISO_CONSERVACION
+        sync: false
       - key: PYTHON_VERSION
         value: 3.12.7
