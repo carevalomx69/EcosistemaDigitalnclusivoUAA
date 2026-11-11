@@ -6,7 +6,7 @@
   <h1 class="panel-titulo">Ruta docente hacia la enseñanza inclusiva</h1>
   <p class="texto-sutil" style="max-width:70ch;">
     Un recorrido en cinco pasos para empezar a hacer más inclusivo uno de tus cursos.
-    Por ahora están disponibles los pasos 1 a 4. Los demás se irán habilitando durante el desarrollo del prototipo.
+    Los cinco pasos están disponibles. Avanza a tu ritmo y vuelve a cualquier paso cuando lo necesites.
   </p>
 
   {% set paso_actual = 1 %}
@@ -31,6 +31,7 @@
           {% if c.tiene_diagnostico %}
             <span class="badge badge-azul">{{ c.unidades|length }} unidad(es) planeada(s)</span>
             <span class="badge badge-azul">Diagnóstico completado el {{ (c.diagnostico_fecha or c.creado).strftime('%d/%m/%Y') }}</span>
+            {% if c.cierre_fecha %}<span class="badge badge-azul">Ruta completada el {{ c.cierre_fecha.strftime('%d/%m/%Y') }}</span>{% endif %}
           {% else %}
             <span class="badge badge-oro">Diagnóstico pendiente</span>
           {% endif %}
@@ -48,6 +49,9 @@
             Verificar<span class="oculto-visual"> los materiales de {{ c.nombre }}</span>
           </a>
           {% endif %}
+          <a class="btn btn-oro btn-sm" href="{{ url_for('ruta_docente.cierre_curso', curso_id=c.id) }}">
+            Cierre<span class="oculto-visual"> y resumen de {{ c.nombre }}</span>
+          </a>
           <a class="btn btn-primario btn-sm" href="{{ url_for('ruta_docente.resultado', curso_id=c.id) }}">
             Ver resultado<span class="oculto-visual"> de {{ c.nombre }}</span>
           </a>

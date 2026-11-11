@@ -55,6 +55,7 @@ ecosistema/
 │   ├── planeacion.py             # Catálogo de decisiones DUA por unidad (sin Flask)
 │   ├── adaptacion.py             # Comprobaciones WCAG 2.2 por tipo de material (sin Flask)
 │   ├── verificacion.py           # Métodos y registro de la verificación (sin Flask)
+│   ├── cierre.py                 # Resumen del recorrido y reflexión de cierre (sin Flask)
 │   └── plan_export.py            # Exportación del plan a Word y Markdown
 ├── instance/                     # Base de datos SQLite local (generada automáticamente)
 ├── requirements.txt              # Dependencias del proyecto
@@ -124,7 +125,7 @@ python -m pytest
 
 ---
 
-## 🧭 Ruta docente (en desarrollo)
+## 🧭 Ruta docente
 
 Recorrido guiado en cinco pasos para quien quiere iniciar con enseñanza inclusiva:
 1. Diagnóstico del curso (disponible)
@@ -138,7 +139,10 @@ Recorrido guiado en cinco pasos para quien quiere iniciar con enseñanza inclusi
    o revisión por otra persona), con un método sugerido por criterio. Se registra si se confirma o si se
    encontró un problema, con una nota. La vista del curso reúne los problemas por corregir y los métodos
    usados, y el plan descargable incluye la verificación
-5. Cierre y resumen
+5. Cierre y resumen (disponible): resumen de los cuatro pasos, lista de lo que falta para cerrar,
+   comparación del primer diagnóstico con el más reciente (el primero se conserva al repetirlo),
+   problemas pendientes y reflexión de la persona docente en tres preguntas. El documento descargable
+   se convierte en el informe final del curso
 
 El diagnóstico es una autoevaluación orientativa de 14 afirmaciones organizadas por los tres
 principios del DUA. No es un instrumento validado; se afinará con el piloto. La ruta guarda datos
@@ -153,7 +157,7 @@ Son cuentas ficticias. **Todas usan la contraseña de la variable de entorno
 | Rol | Correo | Perfil de preferencias |
 | :--- | :--- | :--- |
 | Administrador | `admin@demo.example` | Panel de control global |
-| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente (pasos 1 a 4) |
+| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente completa (pasos 1 a 5) |
 | Estudiante | `alumno@demo.example` | Prefiere audio y ritmo lento |
 | Estudiante | `roberto@demo.example` | Texto grande y alto contraste |
 | Estudiante | `maria@demo.example` | Densidad reducida, sin audio |

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block titulo %}Cierre y resumen — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.inicio') }}">← Volver a la ruta docente</a></p>
+  <h1 class="panel-titulo">Cierre y resumen: {{ curso.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Revisa lo que lograste en el recorrido, lo que queda pendiente y deja por escrito tu reflexión.
+    Puedes cerrar aunque falten pasos y actualizar tu reflexión cuando quieras.
+  </p>
+
+  {% set paso_actual = 5 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  {% if curso.cierre_fecha %}
+  <p class="alerta alerta-exito mt-lg">Ruta completada el {{ curso.cierre_fecha.strftime('%d/%m/%Y') }}.</p>
+  {% endif %}
+
+  <section class="card mt-lg" aria-labelledby="h-lista">
+    <h2 class="card-titulo" id="h-lista">Lista para cerrar</h2>
+    <p>{{ r.completos }} de {{ r.lista|length }} elementos completos.</p>
+    <ul class="lista-cierre" role="list">
+      {% for texto, hecho in r.lista %}
+      <li class="{{ 'cierre-hecho' if hecho else 'cierre-pendiente' }}">
+        <span class="cierre-estado">{{ 'Hecho' if hecho else 'Pendiente' }}</span> {{ texto }}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-resumen">
+    <h2 class="card-titulo" id="h-resumen">Resumen del recorrido</h2>
+    <dl class="resumen-ruta">
+      <dt>1. Diagnóstico</dt>
+      <dd>{% for p in r.diagnostico.principios %}{{ p.nombre }}: {{ p.porcentaje }} %{% if not loop.last %} · {% endif %}{% endfor %}</dd>
+      <dt>2. Planeación con DUA</dt>
+      <dd>{{ r.unidades }} unidad(es) · {{ r.decisiones.tomadas }} de {{ r.decisiones.total }} decisiones tomadas</dd>
+      <dt>3. Adaptación con WCAG 2.2</dt>
+      <dd>{{ r.adaptacion.atendidas }} de {{ r.adaptacion.total }} comprobaciones atendidas
+          ({{ r.adaptacion.pendiente }} por adaptar y {{ r.adaptacion.sin_revisar }} sin revisar)</dd>
+      <dt>4. Verificación</dt>
+      <dd>{{ r.verificacion.confirmadas + r.verificacion.hallazgos }} de {{ r.verificacion.total }} comprobaciones verificadas
+          ({{ r.verificacion.confirmadas }} se confirman y {{ r.verificacion.hallazgos }} con problema)</dd>
+    </dl>
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-comparacion">
+    <h2 class="card-titulo" id="h-comparacion">Diagnóstico: antes y después</h2>
+    {% if r.comparacion %}
+    <div class="tabla-contenedor" role="region" aria-labelledby="cap-comparacion" tabindex="0">
+      <table class="tabla-accesible">
+        <caption id="cap-comparacion" class="oculto-visual">Porcentaje por principio del DUA en el primer diagnóstico y en el más reciente</caption>
+        <thead>
+          <tr><th scope="col">Principio</th><th scope="col">Primer diagnóstico</th><th scope="col">Más reciente</th><th scope="col">Cambio</th></tr>
+        </thead>
+        <tbody>
+          {% for c in r.comparacion %}
+          <tr>
+            <th scope="row">{{ c.nombre }}</th>
+            <td>{{ c.antes }} %</td>
+            <td>{{ c.despues }} %</td>
+            <td>{% if c.cambio > 0 %}+{{ c.cambio }} puntos{% elif c.cambio < 0 %}{{ c.cambio }} puntos{% else %}Sin cambio{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="texto-sutil">El diagnóstico es una autoevaluación orientativa: el cambio refleja tu percepción, no una medición validada.</p>
+    {% else %}
+    <p>Para ver el cambio, repite el diagnóstico al final del ciclo del curso. Tu primer diagnóstico se conserva para la comparación.</p>
+    <p><a class="btn btn-secundario" href="{{ url_for('ruta_docente.diagnostico', curso_id=curso.id) }}">Repetir el diagnóstico</a></p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-pendientes">
+    <h2 class="card-titulo" id="h-pendientes">Problemas pendientes de corregir</h2>
+    {% if r.hallazgos %}
+    <ul>
+      {% for unidad, (criterio, nombre, que, nota) in r.hallazgos %}
+      <li><strong>{{ unidad }} · {{ criterio }} {{ nombre }}:</strong> {{ que }}{% if nota %} <em>Nota: {{ nota }}</em>{% endif %}</li>
+      {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('ruta_docente.verificacion_curso', curso_id=curso.id) }}">Ir a la verificación</a></p>
+    {% else %}
+    <p>No hay problemas registrados en la verificación.</p>
+    {% endif %}
+    {% if r.metodos %}
+    <h3>Métodos de verificación usados</h3>
+    <ul>{% for etiqueta, veces in r.metodos %}<li>{{ etiqueta }}: {{ veces }}</li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+
+  <form method="post" novalidate class="card mt-lg" aria-labelledby="h-reflexion">
+    {{ form.hidden_tag() }}
+    <h2 class="card-titulo" id="h-reflexion">Tu reflexión</h2>
+    <p class="texto-sutil">Las tres preguntas son opcionales. No incluyas datos de estudiantes.</p>
+    {% for id, pregunta, ayuda in preguntas %}
+    <div class="campo-grupo">
+      <label class="campo-label" for="{{ id }}">{{ pregunta }}</label>
+      <textarea class="campo-textarea" id="{{ id }}" name="{{ id }}" rows="4" maxlength="{{ maximo }}"
+                aria-describedby="ayuda-{{ id }}">{{ reflexion.get(id, '') }}</textarea>
+      <p class="campo-ayuda" id="ayuda-{{ id }}">{{ ayuda }} Máximo {{ maximo }} caracteres.</p>
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primario btn-lg">{{ 'Actualizar el cierre' if curso.cierre_fecha else 'Guardar el cierre' }}</button>
+  </form>
+
+  <section class="card mt-lg" aria-labelledby="h-descarga">
+    <h2 class="card-titulo" id="h-descarga">Descargar el informe</h2>
+    <p>El documento reúne el contexto del curso, el diagnóstico, las unidades con sus decisiones, la adaptación,
+       la verificación y, una vez guardado, el cierre con tu reflexión.</p>
+    <p>
+      <a class="btn btn-primario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='docx') }}">
+        Descargar en Word (.docx)
+      </a>
+      <a class="btn btn-secundario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='md') }}">
+        Descargar en texto (.md)
+      </a>
+    </p>
+  </section>
+</div>
+{% endblock %}

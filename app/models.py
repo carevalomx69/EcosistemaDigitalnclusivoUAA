@@ -281,6 +281,11 @@ class CursoDocente(db.Model):
     # Respuestas del diagnóstico: JSON {id_item: 'si'|'parcial'|'no'|'no_se'}
     diagnostico_json  = db.Column(db.Text)
     diagnostico_fecha = db.Column(db.DateTime)
+    # Primer diagnóstico, para comparar antes y después en el cierre (paso 5)
+    diagnostico_inicial_json = db.Column(db.Text)
+    # Cierre (paso 5): JSON {'logros', 'dificultades', 'siguiente'} y fecha de cierre
+    cierre_json  = db.Column(db.Text)
+    cierre_fecha = db.Column(db.DateTime)
 
     docente = db.relationship('Usuario', backref=db.backref('cursos', lazy='dynamic'))
     unidades = db.relationship('UnidadPlan', backref='curso', order_by='UnidadPlan.orden',
@@ -299,6 +304,26 @@ class CursoDocente(db.Model):
     @property
     def tiene_diagnostico(self):
         return bool(self.diagnostico_json)
+
+    @property
+    def respuestas_diagnostico_inicial(self):
+        import json
+        if not self.diagnostico_inicial_json:
+            return {}
+        try:
+            return json.loads(self.diagnostico_inicial_json)
+        except ValueError:
+            return {}
+
+    @property
+    def reflexion(self):
+        import json
+        if not self.cierre_json:
+            return {}
+        try:
+            return json.loads(self.cierre_json)
+        except ValueError:
+            return {}
 
     def __repr__(self):
         return f'<CursoDocente {self.nombre}>'

@@ -822,6 +822,14 @@ body {
 .opciones-columna { display: grid; gap: .25rem; margin-top: .5rem; }
 .grupo-resultado { border: 0; padding: 0; margin: .75rem 0 0; min-width: 0; }
 .grupo-resultado legend { font-weight: 600; padding: 0; }
+.lista-cierre { list-style: none; padding: 0; margin: .75rem 0 0; display: grid; gap: .5rem; }
+.cierre-estado { display: inline-block; min-width: 6.5rem; padding: 1px 8px; margin-right: .5rem; border-radius: 999px;
+                 font-size: .85rem; font-weight: 600; text-align: center; border: 1px solid currentColor; }
+.cierre-hecho .cierre-estado { color: var(--uaa-azul); background: var(--uaa-azul-claro); }
+.cierre-pendiente .cierre-estado { color: #7A5C00; background: var(--uaa-oro-claro); }
+.resumen-ruta { margin: .75rem 0 0; }
+.resumen-ruta dt { font-weight: 600; margin-top: .75rem; }
+.resumen-ruta dd { margin: .15rem 0 0; }
 .etiqueta-sugerida { display: inline-block; margin-left: .5rem; padding: 1px 8px; border-radius: 999px;
                      border: 1px solid var(--uaa-azul); color: var(--uaa-azul); font-size: .8rem; font-weight: 600;
                      background: var(--uaa-azul-claro); }

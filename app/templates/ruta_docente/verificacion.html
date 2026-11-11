@@ -113,7 +113,10 @@
         Descargar en texto (.md)
       </a>
     </p>
-    <p class="texto-sutil">Siguiente paso de la ruta: Cierre y resumen (próximamente).</p>
   </section>
+
+  <p class="mt-lg">
+    <a class="btn btn-oro" href="{{ url_for('ruta_docente.cierre_curso', curso_id=curso.id) }}">Siguiente: Cierre y resumen <span aria-hidden="true">→</span></a>
+  </p>
 </div>
 {% endblock %}
