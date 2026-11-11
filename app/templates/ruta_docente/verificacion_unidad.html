@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block titulo %}Verificar la unidad — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.verificacion_curso', curso_id=curso.id) }}">← Volver a la verificación de {{ curso.nombre }}</a></p>
+  <h1 class="panel-titulo">Verificar la unidad: {{ unidad.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Para cada comprobación, aplica el método indicado (o el que hayas usado), registra el resultado y,
+    si encontraste un problema, descríbelo en pocas palabras. Puedes guardar a medias y volver después.
+  </p>
+
+  {% set paso_actual = 4 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  {% if avance_paso3.pendiente + avance_paso3.sin_revisar %}
+  <div class="alerta alerta-aviso mt-lg">
+    <p>En el paso 3 quedan {{ avance_paso3.pendiente }} comprobaciones por adaptar y {{ avance_paso3.sin_revisar }} sin revisar.
+       Aquí solo se verifican las que marcaste como «Ya se cumple».</p>
+    <p><a href="{{ url_for('ruta_docente.adaptacion_unidad', curso_id=curso.id, unidad_id=unidad.id) }}">Ir al paso 3 de esta unidad</a></p>
+  </div>
+  {% endif %}
+
+  {% if grupos %}
+  <section class="card mt-lg" aria-labelledby="h-avance">
+    <h2 class="card-titulo" id="h-avance">Avance de la verificación</h2>
+    <p>
+      {{ avance.confirmadas + avance.hallazgos }} de {{ avance.total }} comprobaciones verificadas:
+      {{ avance.confirmadas }} se confirman y {{ avance.hallazgos }} tienen un problema.
+      Quedan {{ avance.sin_verificar }} sin verificar.
+    </p>
+  </section>
+
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    {% for m, filas in grupos %}
+    <section class="card mt-lg" aria-labelledby="h-{{ m.id }}">
+      <h2 class="card-titulo" id="h-{{ m.id }}">{{ m.nombre }}</h2>
+      {% for cid, criterio, nombre, nivel, que, como in filas %}
+      {% set r = registros.get(cid, {}) %}
+      <fieldset class="afirmacion" id="fs-{{ cid }}" aria-describedby="ref-{{ cid }}">
+        <legend>{{ que }}</legend>
+        <p class="texto-sutil" id="ref-{{ cid }}">WCAG 2.2 · {{ criterio }} {{ nombre }} · nivel {{ nivel }}
+          · método sugerido: {{ etiqueta_metodo[sugerido[cid]] }}</p>
+
+        <div class="campo-grupo">
+          <label class="campo-label" for="met-{{ cid }}">Cómo lo verificaste</label>
+          <select class="campo-select" id="met-{{ cid }}" name="met_{{ cid }}">
+            {% for valor, etiqueta in metodos %}
+            <option value="{{ valor }}" {% if (r.metodo or sugerido[cid]) == valor %}selected{% endif %}>{{ etiqueta }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <fieldset class="grupo-resultado">
+          <legend>Resultado</legend>
+          <div class="opciones-fila">
+            {% for valor, etiqueta in resultados %}
+            <label class="opcion">
+              <input type="radio" name="res_{{ cid }}" value="{{ valor }}" {% if r.resultado == valor %}checked{% endif %}>
+              <span>{{ etiqueta }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="campo-grupo">
+          <label class="campo-label" for="nota-{{ cid }}">Qué encontraste (opcional)</label>
+          <input class="campo-input" id="nota-{{ cid }}" name="nota_{{ cid }}" type="text"
+                 maxlength="{{ max_nota }}" value="{{ r.nota or '' }}" aria-describedby="ayuda-nota-{{ cid }}">
+          <p class="campo-ayuda" id="ayuda-nota-{{ cid }}">Máximo {{ max_nota }} caracteres. No incluyas datos de estudiantes.</p>
+        </div>
+      </fieldset>
+      {% endfor %}
+    </section>
+    {% endfor %}
+
+    <p class="mt-lg"><button type="submit" class="btn btn-primario btn-lg">Guardar verificación</button></p>
+  </form>
+  {% else %}
+  <p class="alerta alerta-info mt-lg">
+    No hay comprobaciones marcadas como «Ya se cumple» en el paso 3. Cuando adaptes un material y lo marques,
+    aparecerá aquí para verificarlo.
+  </p>
+  <p><a class="btn btn-oro" href="{{ url_for('ruta_docente.adaptacion_unidad', curso_id=curso.id, unidad_id=unidad.id) }}">Ir al paso 3 de esta unidad</a></p>
+  {% endif %}
+</div>
+{% endblock %}

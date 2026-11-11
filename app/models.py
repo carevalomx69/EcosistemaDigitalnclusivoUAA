@@ -319,6 +319,8 @@ class UnidadPlan(db.Model):
     notas        = db.Column(db.Text)
     # Adaptación con WCAG 2.2 (paso 3): JSON {'materiales': [ids], 'estados': {id_comprobación: estado}}
     adaptacion_json = db.Column(db.Text)
+    # Verificación (paso 4): JSON {id_comprobación: {'metodo', 'resultado', 'nota'}}
+    verificacion_json = db.Column(db.Text)
     actualizado  = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     @property
@@ -338,6 +340,16 @@ class UnidadPlan(db.Model):
             return {}
         try:
             return json.loads(self.adaptacion_json)
+        except ValueError:
+            return {}
+
+    @property
+    def verificacion(self):
+        import json
+        if not self.verificacion_json:
+            return {}
+        try:
+            return json.loads(self.verificacion_json)
         except ValueError:
             return {}
 

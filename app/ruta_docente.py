@@ -6,7 +6,7 @@ Pasos de la ruta:
   1. Diagnóstico del curso      (implementado)
   2. Planeación con DUA         (implementado)
   3. Creación o adaptación con criterios WCAG 2.2 (implementado)
-  4. Verificación               (próximamente)
+  4. Verificación               (implementado)
   5. Cierre y resumen           (próximamente)
 """
 import json
@@ -20,7 +20,7 @@ from app import db
 from app.diagnostico import (OPCIONES, PRINCIPIOS, VALORES_VALIDOS, evaluar, faltantes)
 from app.forms import FormCurso, FormUnidad, FormVacio
 from app.models import CursoDocente, UnidadPlan
-from app import adaptacion, plan_export, planeacion
+from app import adaptacion, plan_export, planeacion, verificacion
 
 ruta = Blueprint('ruta_docente', __name__, url_prefix='/ruta-docente')
 
@@ -28,7 +28,7 @@ PASOS = (
     {'num': 1, 'titulo': 'Diagnóstico del curso', 'disponible': True},
     {'num': 2, 'titulo': 'Planeación con DUA', 'disponible': True},
     {'num': 3, 'titulo': 'Creación o adaptación con WCAG 2.2', 'disponible': True},
-    {'num': 4, 'titulo': 'Verificación', 'disponible': False},
+    {'num': 4, 'titulo': 'Verificación', 'disponible': True},
     {'num': 5, 'titulo': 'Cierre y resumen', 'disponible': False},
 )
 
@@ -276,3 +276,40 @@ def adaptacion_unidad(curso_id, unidad_id):
     return render_template('ruta_docente/adaptacion_unidad.html', curso=curso, unidad=u, form=form,
                            pasos=PASOS, materiales=adaptacion.MATERIALES, estados=adaptacion.ESTADOS,
                            actual=actual, sugeridos=sugeridos, avance=adaptacion.avance(actual))
+
+
+# ── PASO 4: VERIFICACIÓN ───────────────────────────────────────────────────
+@ruta.route('/curso/<int:curso_id>/verificacion')
+@solo_docentes
+def verificacion_curso(curso_id):
+    curso = _curso_propio_o_404(curso_id)
+    falta = _requiere_diagnostico(curso)
+    if falta:
+        return falta
+    return render_template('ruta_docente/verificacion.html', curso=curso, pasos=PASOS,
+                           avance=verificacion.avance, avance_paso3=adaptacion.avance,
+                           hallazgos=verificacion.hallazgos,
+                           metodos=verificacion.metodos_usados([u.verificacion for u in curso.unidades]))
+
+
+@ruta.route('/curso/<int:curso_id>/verificacion/unidad/<int:unidad_id>', methods=['GET', 'POST'])
+@solo_docentes
+def verificacion_unidad(curso_id, unidad_id):
+    curso = _curso_propio_o_404(curso_id)
+    falta = _requiere_diagnostico(curso)
+    if falta:
+        return falta
+    u = _unidad_propia_o_404(curso, unidad_id)
+    form = FormVacio()
+    if form.validate_on_submit():
+        u.verificacion_json = json.dumps(verificacion.limpiar(u.adaptacion, request.form))
+        db.session.commit()
+        flash('Verificación guardada.', 'success')
+        return redirect(url_for('ruta_docente.verificacion_curso', curso_id=curso.id))
+    return render_template('ruta_docente/verificacion_unidad.html', curso=curso, unidad=u, form=form,
+                           pasos=PASOS, grupos=verificacion.por_verificar(u.adaptacion),
+                           registros=u.verificacion, metodos=verificacion.METODOS,
+                           resultados=verificacion.RESULTADOS, sugerido=verificacion.METODO_SUGERIDO,
+                           etiqueta_metodo=verificacion.ETIQUETA_METODO, max_nota=verificacion.MAX_NOTA,
+                           avance=verificacion.avance(u.adaptacion, u.verificacion),
+                           avance_paso3=adaptacion.avance(u.adaptacion))

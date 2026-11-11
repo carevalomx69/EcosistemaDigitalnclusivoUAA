@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block titulo %}Verificación — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.inicio') }}">← Volver a la ruta docente</a></p>
+  <h1 class="panel-titulo">Verificación: {{ curso.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Comprueba con un método concreto lo que en el paso 3 marcaste como «Ya se cumple» y registra qué encontraste.
+    Así el plan pasa de lo declarado a lo verificado.
+  </p>
+  <p class="alerta alerta-info" style="max-width:70ch;">
+    Las herramientas automáticas detectan solo una parte de los problemas de accesibilidad.
+    Combínalas con pruebas manuales, como recorrer el material solo con teclado o con un lector de pantalla.
+  </p>
+
+  {% set paso_actual = 4 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  <section class="card mt-lg" aria-labelledby="h-unidades">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">🔎</div>
+      <h2 class="card-titulo" id="h-unidades">Verificación por unidad</h2>
+    </div>
+
+    {% if curso.unidades %}
+    <ul class="lista-cursos" role="list">
+      {% for u in curso.unidades %}
+      <li class="curso-item">
+        <div>
+          <strong>{{ loop.index }}. {{ u.nombre }}</strong><br>
+          {% if u.adaptacion %}
+            {% set n = avance(u.adaptacion, u.verificacion) %}
+            {% set p3 = avance_paso3(u.adaptacion) %}
+            {% if n.total %}
+            <span class="badge {% if n.sin_verificar == 0 and n.hallazgos == 0 %}badge-azul{% else %}badge-oro{% endif %}">
+              {{ n.confirmadas + n.hallazgos }} de {{ n.total }} verificadas
+            </span>
+            {% if n.hallazgos %}<span class="badge badge-oro">{{ n.hallazgos }} con problema</span>{% endif %}
+            {% else %}
+            <span class="texto-sutil">Ninguna comprobación marcada como «Ya se cumple» en el paso 3.</span>
+            {% endif %}
+            {% if p3.pendiente + p3.sin_revisar %}
+            <br><span class="texto-sutil">En el paso 3: {{ p3.pendiente }} por adaptar y {{ p3.sin_revisar }} sin revisar.</span>
+            {% endif %}
+          {% else %}
+            <span class="badge badge-oro">Materiales sin revisar en el paso 3</span>
+          {% endif %}
+        </div>
+        <div class="acciones-curso">
+          {% if u.adaptacion %}
+          <a class="btn btn-primario btn-sm"
+             href="{{ url_for('ruta_docente.verificacion_unidad', curso_id=curso.id, unidad_id=u.id) }}">
+            {{ 'Continuar verificación' if u.verificacion else 'Verificar' }}<span class="oculto-visual"> {{ u.nombre }}</span>
+          </a>
+          {% else %}
+          <a class="btn btn-secundario btn-sm"
+             href="{{ url_for('ruta_docente.adaptacion_unidad', curso_id=curso.id, unidad_id=u.id) }}">
+            Ir al paso 3<span class="oculto-visual"> para {{ u.nombre }}</span>
+          </a>
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Todavía no hay unidades en tu planeación. Agrega al menos una y revisa sus materiales antes de verificarlos.</p>
+    <p><a class="btn btn-oro" href="{{ url_for('ruta_docente.plan', curso_id=curso.id) }}">Ir a la planeación con DUA</a></p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-hallazgos">
+    <h2 class="card-titulo" id="h-hallazgos">Problemas por corregir</h2>
+    {% set ns = namespace(alguno=false) %}
+    {% for u in curso.unidades %}
+      {% set lista = hallazgos(u.adaptacion, u.verificacion) %}
+      {% if lista %}
+      {% set ns.alguno = true %}
+      <h3>{{ u.nombre }}</h3>
+      <ul>
+        {% for criterio, nombre, que, nota in lista %}
+        <li><strong>{{ criterio }} {{ nombre }}:</strong> {{ que }}{% if nota %} <em>Nota: {{ nota }}</em>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    {% endfor %}
+    {% if not ns.alguno %}
+    <p>No se han registrado problemas.</p>
+    {% else %}
+    <p class="texto-sutil">Cuando los corrijas, vuelve a verificar la comprobación y marca «Se confirma».</p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-metodos">
+    <h2 class="card-titulo" id="h-metodos">Métodos usados en el curso</h2>
+    {% if metodos %}
+    <ul>
+      {% for etiqueta, veces in metodos %}<li>{{ etiqueta }}: {{ veces }}</li>{% endfor %}
+    </ul>
+    {% else %}
+    <p>Aún no hay verificaciones registradas.</p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-descarga">
+    <h2 class="card-titulo" id="h-descarga">Descargar el plan</h2>
+    <p>El plan descargable incluye, en cada unidad, el resultado de la verificación.</p>
+    <p>
+      <a class="btn btn-primario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='docx') }}">
+        Descargar en Word (.docx)
+      </a>
+      <a class="btn btn-secundario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='md') }}">
+        Descargar en texto (.md)
+      </a>
+    </p>
+    <p class="texto-sutil">Siguiente paso de la ruta: Cierre y resumen (próximamente).</p>
+  </section>
+</div>
+{% endblock %}

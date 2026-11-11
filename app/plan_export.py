@@ -14,7 +14,7 @@ from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
-from app import adaptacion
+from app import adaptacion, verificacion
 from app.diagnostico import evaluar
 from app.planeacion import etiquetas_elegidas, decisiones_tomadas, TOTAL_DECISIONES
 
@@ -47,6 +47,8 @@ def construir(curso):
             'principios': etiquetas_elegidas(u.elegidas),
             'adaptacion': adaptacion.detalle(u.adaptacion) if u.adaptacion else None,
             'avance': adaptacion.avance(u.adaptacion) if u.adaptacion else None,
+            'verificacion': verificacion.detalle(u.adaptacion, u.verificacion),
+            'avance_verificacion': verificacion.avance(u.adaptacion, u.verificacion),
         })
     contexto = [('Programa educativo', curso.programa),
                 ('Modalidad', MODALIDADES.get(curso.modalidad, curso.modalidad)),
@@ -65,6 +67,18 @@ def construir(curso):
 def _resumen_avance(n):
     return (f"Comprobaciones atendidas: {n['atendidas']} de {n['total']} "
             f"(por adaptar: {n['pendiente']}; sin revisar: {n['sin_revisar']}).")
+
+
+def _resumen_verificacion(n):
+    return (f"Comprobaciones verificadas: {n['confirmadas'] + n['hallazgos']} de {n['total']} "
+            f"(se confirman: {n['confirmadas']}; con problema: {n['hallazgos']}).")
+
+
+def _linea_verificacion(c, nombre, resultado, metodo, nota):
+    texto = f'{c} {nombre}: {resultado}'
+    if metodo:
+        texto += f' (método: {metodo})'
+    return texto + (f'. Nota: {nota}' if nota else '.')
 
 
 def a_markdown(curso):
@@ -102,6 +116,12 @@ def a_markdown(curso):
                 L += [f'##### {material}', '']
                 L += [f'- {c} {nombre} (nivel {nivel}): {que} Estado: {estado}.'
                       for c, nombre, nivel, que, estado in filas]
+                L.append('')
+        if u['verificacion']:
+            L += ['#### Verificación', '', _resumen_verificacion(u['avance_verificacion']), '']
+            for material, filas in u['verificacion']:
+                L += [f'##### {material}', '']
+                L += [f'- {_linea_verificacion(*f)}' for f in filas]
                 L.append('')
         if u['notas']:
             L += ['Notas:', '', u['notas'], '']
@@ -170,6 +190,13 @@ def a_docx(curso):
                 for c, nombre, nivel, que, estado in filas:
                     doc.add_paragraph(f'{c} {nombre} (nivel {nivel}): {que} Estado: {estado}.',
                                       style='List Bullet')
+        if u['verificacion']:
+            doc.add_heading('Verificación', level=3)
+            doc.add_paragraph(_resumen_verificacion(u['avance_verificacion']))
+            for material, filas in u['verificacion']:
+                doc.add_heading(material, level=4)
+                for f in filas:
+                    doc.add_paragraph(_linea_verificacion(*f), style='List Bullet')
         if u['notas']:
             doc.add_paragraph('Notas:')
             doc.add_paragraph(u['notas'])
