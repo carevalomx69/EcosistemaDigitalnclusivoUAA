@@ -317,6 +317,8 @@ class UnidadPlan(db.Model):
     # Decisiones: JSON {id_decision: [valores elegidos]}
     decisiones_json = db.Column(db.Text)
     notas        = db.Column(db.Text)
+    # Adaptación con WCAG 2.2 (paso 3): JSON {'materiales': [ids], 'estados': {id_comprobación: estado}}
+    adaptacion_json = db.Column(db.Text)
     actualizado  = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     @property
@@ -326,6 +328,16 @@ class UnidadPlan(db.Model):
             return {}
         try:
             return json.loads(self.decisiones_json)
+        except ValueError:
+            return {}
+
+    @property
+    def adaptacion(self):
+        import json
+        if not self.adaptacion_json:
+            return {}
+        try:
+            return json.loads(self.adaptacion_json)
         except ValueError:
             return {}
 

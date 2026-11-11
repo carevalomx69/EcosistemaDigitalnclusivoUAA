@@ -14,6 +14,7 @@ from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
+from app import adaptacion
 from app.diagnostico import evaluar
 from app.planeacion import etiquetas_elegidas, decisiones_tomadas, TOTAL_DECISIONES
 
@@ -44,6 +45,8 @@ def construir(curso):
             'notas': u.notas,
             'tomadas': decisiones_tomadas(u.elegidas),
             'principios': etiquetas_elegidas(u.elegidas),
+            'adaptacion': adaptacion.detalle(u.adaptacion) if u.adaptacion else None,
+            'avance': adaptacion.avance(u.adaptacion) if u.adaptacion else None,
         })
     contexto = [('Programa educativo', curso.programa),
                 ('Modalidad', MODALIDADES.get(curso.modalidad, curso.modalidad)),
@@ -57,6 +60,11 @@ def construir(curso):
         'resultado': resultado,
         'unidades': unidades,
     }
+
+
+def _resumen_avance(n):
+    return (f"Comprobaciones atendidas: {n['atendidas']} de {n['total']} "
+            f"(por adaptar: {n['pendiente']}; sin revisar: {n['sin_revisar']}).")
 
 
 def a_markdown(curso):
@@ -88,6 +96,13 @@ def a_markdown(curso):
             for pregunta, etiquetas in filas:
                 L.append(f'- {pregunta} ' + ('; '.join(etiquetas) if etiquetas else 'Sin decidir todavía.'))
             L.append('')
+        if u['adaptacion'] is not None:
+            L += ['#### Adaptación con WCAG 2.2', '', _resumen_avance(u['avance']), '']
+            for material, filas in u['adaptacion']:
+                L += [f'##### {material}', '']
+                L += [f'- {c} {nombre} (nivel {nivel}): {que} Estado: {estado}.'
+                      for c, nombre, nivel, que, estado in filas]
+                L.append('')
         if u['notas']:
             L += ['Notas:', '', u['notas'], '']
     L += ['---', AVISO, '']
@@ -147,6 +162,14 @@ def a_docx(curso):
             for pregunta, etiquetas in filas:
                 texto = '; '.join(etiquetas) if etiquetas else 'Sin decidir todavía.'
                 doc.add_paragraph(f'{pregunta} {texto}', style='List Bullet')
+        if u['adaptacion'] is not None:
+            doc.add_heading('Adaptación con WCAG 2.2', level=3)
+            doc.add_paragraph(_resumen_avance(u['avance']))
+            for material, filas in u['adaptacion']:
+                doc.add_heading(material, level=4)
+                for c, nombre, nivel, que, estado in filas:
+                    doc.add_paragraph(f'{c} {nombre} (nivel {nivel}): {que} Estado: {estado}.',
+                                      style='List Bullet')
         if u['notas']:
             doc.add_paragraph('Notas:')
             doc.add_paragraph(u['notas'])

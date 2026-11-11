@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block titulo %}Adaptación con WCAG 2.2 — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.inicio') }}">← Volver a la ruta docente</a></p>
+  <h1 class="panel-titulo">Adaptación con WCAG 2.2: {{ curso.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    En cada unidad, revisa los materiales que vas a crear o adaptar con comprobaciones concretas basadas en
+    los criterios de nivel A y AA de las Pautas de Accesibilidad para el Contenido Web (WCAG) 2.2.
+    Los tipos de material se sugieren a partir de las decisiones de tu planeación.
+  </p>
+  <p class="alerta alerta-info" style="max-width:70ch;">
+    Es una lista de trabajo para preparar materiales, no una auditoría de conformidad.
+    La verificación con herramientas y personas usuarias corresponde al paso 4.
+  </p>
+
+  {% set paso_actual = 3 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  <section class="card mt-lg" aria-labelledby="h-unidades">
+    <div class="card-header">
+      <div class="card-icono" aria-hidden="true">🛠️</div>
+      <h2 class="card-titulo" id="h-unidades">Materiales por unidad</h2>
+    </div>
+
+    {% if curso.unidades %}
+    <ul class="lista-cursos" role="list">
+      {% for u in curso.unidades %}
+      {% set a = u.adaptacion %}
+      <li class="curso-item">
+        <div>
+          <strong>{{ loop.index }}. {{ u.nombre }}</strong><br>
+          {% if a %}
+            {% set n = avance(a) %}
+            {% if a.materiales %}
+            <span class="texto-sutil">{% for mid in a.materiales if mid in por_id %}{{ por_id[mid].nombre }}{% if not loop.last %} · {% endif %}{% endfor %}</span><br>
+            {% endif %}
+            <span class="badge {% if n.total and n.atendidas == n.total %}badge-azul{% else %}badge-oro{% endif %}">
+              {{ n.atendidas }} de {{ n.total }} comprobaciones atendidas
+            </span>
+            {% if n.pendiente %}<span class="badge badge-oro">{{ n.pendiente }} por adaptar</span>{% endif %}
+          {% else %}
+            <span class="badge badge-oro">Sin revisar todavía</span>
+          {% endif %}
+        </div>
+        <div class="acciones-curso">
+          <a class="btn btn-primario btn-sm"
+             href="{{ url_for('ruta_docente.adaptacion_unidad', curso_id=curso.id, unidad_id=u.id) }}">
+            {{ 'Continuar revisión' if a else 'Revisar materiales' }}<span class="oculto-visual"> de {{ u.nombre }}</span>
+          </a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>Todavía no hay unidades en tu planeación. Agrega al menos una para revisar sus materiales.</p>
+    <p><a class="btn btn-oro" href="{{ url_for('ruta_docente.plan', curso_id=curso.id) }}">Ir a la planeación con DUA</a></p>
+    {% endif %}
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-referencias">
+    <h2 class="card-titulo" id="h-referencias">Para saber más</h2>
+    <ul>
+      <li><a href="https://www.w3.org/WAI/WCAG22/quickref/" lang="en">How to Meet WCAG 2.2 (Quick Reference)</a>
+        <span class="texto-sutil">· W3C, en inglés: técnicas para cumplir cada criterio</span></li>
+      <li><a href="https://www.w3.org/WAI/standards-guidelines/wcag/new-in-22/" lang="en">What's New in WCAG 2.2</a>
+        <span class="texto-sutil">· W3C, en inglés: los nueve criterios nuevos</span></li>
+    </ul>
+  </section>
+
+  <section class="card mt-lg" aria-labelledby="h-descarga">
+    <h2 class="card-titulo" id="h-descarga">Descargar el plan</h2>
+    <p>El plan descargable incluye, en cada unidad, la revisión de materiales con su estado.</p>
+    <p>
+      <a class="btn btn-primario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='docx') }}">
+        Descargar en Word (.docx)
+      </a>
+      <a class="btn btn-secundario" href="{{ url_for('ruta_docente.plan_descargar', curso_id=curso.id, formato='md') }}">
+        Descargar en texto (.md)
+      </a>
+    </p>
+    <p class="texto-sutil">Siguiente paso de la ruta: Verificación (próximamente).</p>
+  </section>
+</div>
+{% endblock %}

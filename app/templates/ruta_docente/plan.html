@@ -93,8 +93,13 @@
         Descargar en texto (.md)
       </a>
     </p>
-    <p class="texto-sutil">Siguiente paso de la ruta: Creación o adaptación con WCAG 2.2 (próximamente).</p>
   </section>
+
+  {% if curso.unidades %}
+  <p class="mt-lg">
+    <a class="btn btn-oro" href="{{ url_for('ruta_docente.adaptacion_curso', curso_id=curso.id) }}">Siguiente: Creación o adaptación con WCAG 2.2 <span aria-hidden="true">→</span></a>
+  </p>
+  {% endif %}
 </div>
 {% endblock %}
 

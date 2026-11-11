@@ -31,7 +31,8 @@ PUBLICAS = ['/login', '/registro', '/accesibilidad', '/privacidad']
 PRIVADAS = ['/', '/modulo', '/modulo?seccion=2', '/panel/docente', '/perfil', '/actividad/1',
             '/ruta-docente/', '/ruta-docente/curso/nuevo',
             '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado',
-            '/ruta-docente/curso/1/plan', '/ruta-docente/curso/1/plan/unidad/1']
+            '/ruta-docente/curso/1/plan', '/ruta-docente/curso/1/plan/unidad/1',
+            '/ruta-docente/curso/1/adaptacion', '/ruta-docente/curso/1/adaptacion/unidad/1']
 
 
 @pytest.fixture(scope='module')

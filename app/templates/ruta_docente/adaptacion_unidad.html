@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block titulo %}Materiales de la unidad — Ruta docente{% endblock %}
+
+{% block contenido %}
+<div class="contenido-principal ruta-contenedor">
+  <p><a href="{{ url_for('ruta_docente.adaptacion_curso', curso_id=curso.id) }}">← Volver a la adaptación de {{ curso.nombre }}</a></p>
+  <h1 class="panel-titulo">Materiales de la unidad: {{ unidad.nombre }}</h1>
+  <p class="texto-sutil" style="max-width:70ch;">
+    Elige los tipos de material que usarás y, para cada comprobación, indica si ya se cumple, si falta adaptarla
+    o si no aplica a tus materiales. Puedes guardar a medias y volver después.
+  </p>
+
+  {% set paso_actual = 3 %}
+  {% include "ruta_docente/_pasos.html" %}
+
+  <form method="post" novalidate>
+    {{ form.hidden_tag() }}
+
+    <section class="card mt-lg" aria-labelledby="h-materiales">
+      <h2 class="card-titulo" id="h-materiales">Tipos de material</h2>
+      <fieldset class="afirmacion">
+        <legend>¿Qué tipos de material usarás en esta unidad?</legend>
+        <div class="opciones-columna">
+          {% for m in materiales %}
+          <label class="opcion">
+            <input type="checkbox" name="materiales" value="{{ m.id }}"
+                   {% if m.id in actual.materiales %}checked{% endif %}>
+            <span>{{ m.nombre }}
+              {% if m.id in sugeridos %}<span class="etiqueta-sugerida">Según tu planeación</span>{% endif %}
+              <span class="texto-sutil">· {{ m.descripcion }}</span>
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+        <p class="campo-ayuda">
+          Al cambiar los tipos de material y guardar, se muestran sus comprobaciones.
+          Si quitas un tipo, se borra su revisión.
+        </p>
+      </fieldset>
+    </section>
+
+    {% if actual.materiales %}
+    <section class="card mt-lg" aria-labelledby="h-avance">
+      <h2 class="card-titulo" id="h-avance">Avance de la revisión</h2>
+      <p>
+        {{ avance.atendidas }} de {{ avance.total }} comprobaciones atendidas
+        ({{ avance.cumple }} se cumplen y {{ avance.no_aplica }} no aplican).
+        Quedan {{ avance.pendiente }} por adaptar y {{ avance.sin_revisar }} sin revisar.
+      </p>
+    </section>
+
+    {% for m in materiales if m.id in actual.materiales %}
+    <section class="card mt-lg" aria-labelledby="h-{{ m.id }}">
+      <h2 class="card-titulo" id="h-{{ m.id }}">{{ m.nombre }}</h2>
+      <p class="texto-sutil">{{ m.descripcion }}</p>
+      {% for cid, criterio, nombre, nivel, que, como in m.comprobaciones %}
+      <fieldset class="afirmacion" id="fs-{{ cid }}" aria-describedby="ref-{{ cid }} como-{{ cid }}">
+        <legend>{{ que }}</legend>
+        <p class="texto-sutil" id="ref-{{ cid }}">WCAG 2.2 · {{ criterio }} {{ nombre }} · nivel {{ nivel }}</p>
+        <p id="como-{{ cid }}"><strong>Cómo:</strong> {{ como }}</p>
+        <div class="opciones-fila">
+          {% for valor, etiqueta in estados %}
+          <label class="opcion">
+            <input type="radio" name="{{ cid }}" value="{{ valor }}"
+                   {% if actual.estados.get(cid) == valor %}checked{% endif %}>
+            <span>{{ etiqueta }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+      {% endfor %}
+    </section>
+    {% endfor %}
+    {% else %}
+    <p class="alerta alerta-aviso mt-lg">Marca al menos un tipo de material y guarda para ver sus comprobaciones.</p>
+    {% endif %}
+
+    <p class="mt-lg"><button type="submit" class="btn btn-primario btn-lg">Guardar revisión</button></p>
+  </form>
+</div>
+{% endblock %}
