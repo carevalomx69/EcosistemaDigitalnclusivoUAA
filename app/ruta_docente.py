@@ -5,7 +5,7 @@ Ruta docente: recorrido guiado para quien desea iniciar con enseñanza inclusiva
 Pasos de la ruta:
   1. Diagnóstico del curso      (implementado)
   2. Planeación con DUA         (implementado)
-  3. Creación o adaptación con criterios WCAG 2.2 (próximamente)
+  3. Creación o adaptación con criterios WCAG 2.2 (implementado)
   4. Verificación               (próximamente)
   5. Cierre y resumen           (próximamente)
 """
@@ -20,14 +20,14 @@ from app import db
 from app.diagnostico import (OPCIONES, PRINCIPIOS, VALORES_VALIDOS, evaluar, faltantes)
 from app.forms import FormCurso, FormUnidad, FormVacio
 from app.models import CursoDocente, UnidadPlan
-from app import plan_export, planeacion
+from app import adaptacion, plan_export, planeacion
 
 ruta = Blueprint('ruta_docente', __name__, url_prefix='/ruta-docente')
 
 PASOS = (
     {'num': 1, 'titulo': 'Diagnóstico del curso', 'disponible': True},
     {'num': 2, 'titulo': 'Planeación con DUA', 'disponible': True},
-    {'num': 3, 'titulo': 'Creación o adaptación con WCAG 2.2', 'disponible': False},
+    {'num': 3, 'titulo': 'Creación o adaptación con WCAG 2.2', 'disponible': True},
     {'num': 4, 'titulo': 'Verificación', 'disponible': False},
     {'num': 5, 'titulo': 'Cierre y resumen', 'disponible': False},
 )
@@ -238,3 +238,41 @@ def plan_descargar(curso_id):
     nombre = plan_export.nombre_de_archivo(curso, formato)
     return Response(contenido, mimetype=tipo,
                     headers={'Content-Disposition': f'attachment; filename="{nombre}"'})
+
+
+# ── PASO 3: CREACIÓN O ADAPTACIÓN CON WCAG 2.2 ─────────────────────────────
+@ruta.route('/curso/<int:curso_id>/adaptacion')
+@solo_docentes
+def adaptacion_curso(curso_id):
+    curso = _curso_propio_o_404(curso_id)
+    falta = _requiere_diagnostico(curso)
+    if falta:
+        return falta
+    return render_template('ruta_docente/adaptacion.html', curso=curso, pasos=PASOS,
+                           avance=adaptacion.avance, por_id=adaptacion.POR_ID)
+
+
+@ruta.route('/curso/<int:curso_id>/adaptacion/unidad/<int:unidad_id>', methods=['GET', 'POST'])
+@solo_docentes
+def adaptacion_unidad(curso_id, unidad_id):
+    curso = _curso_propio_o_404(curso_id)
+    falta = _requiere_diagnostico(curso)
+    if falta:
+        return falta
+    u = _unidad_propia_o_404(curso, unidad_id)
+    sugeridos = adaptacion.materiales_sugeridos(u.elegidas)
+    actual = u.adaptacion or {'materiales': sugeridos, 'estados': {}}
+    form = FormVacio()
+    if form.validate_on_submit():
+        nuevo = adaptacion.limpiar(request.form.getlist('materiales'), request.form)
+        cambiaron = nuevo['materiales'] != actual['materiales']
+        u.adaptacion_json = json.dumps(nuevo)
+        db.session.commit()
+        if cambiaron:
+            flash('Materiales actualizados. Revisa las comprobaciones de cada uno.', 'success')
+            return redirect(url_for('ruta_docente.adaptacion_unidad', curso_id=curso.id, unidad_id=u.id))
+        flash('Revisión guardada.', 'success')
+        return redirect(url_for('ruta_docente.adaptacion_curso', curso_id=curso.id))
+    return render_template('ruta_docente/adaptacion_unidad.html', curso=curso, unidad=u, form=form,
+                           pasos=PASOS, materiales=adaptacion.MATERIALES, estados=adaptacion.ESTADOS,
+                           actual=actual, sugeridos=sugeridos, avance=adaptacion.avance(actual))

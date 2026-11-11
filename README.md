@@ -53,6 +53,7 @@ ecosistema/
 │   ├── ruta_docente.py           # Ruta docente: cursos, diagnóstico y resultado
 │   ├── diagnostico.py            # Instrumento de diagnóstico y su puntuación (sin Flask)
 │   ├── planeacion.py             # Catálogo de decisiones DUA por unidad (sin Flask)
+│   ├── adaptacion.py             # Comprobaciones WCAG 2.2 por tipo de material (sin Flask)
 │   └── plan_export.py            # Exportación del plan a Word y Markdown
 ├── instance/                     # Base de datos SQLite local (generada automáticamente)
 ├── requirements.txt              # Dependencias del proyecto
@@ -127,7 +128,10 @@ python -m pytest
 Recorrido guiado en cinco pasos para quien quiere iniciar con enseñanza inclusiva:
 1. Diagnóstico del curso (disponible)
 2. Planeación con DUA (disponible): unidades del curso, 8 decisiones por unidad ligadas al diagnóstico y plan descargable en Word (.docx) o texto (.md)
-3. Creación o adaptación con criterios WCAG 2.2
+3. Creación o adaptación con criterios WCAG 2.2 (disponible): en cada unidad se eligen los tipos de
+   material (documentos, esquemas, videos, audios y actividades en línea), sugeridos a partir de la
+   planeación, y se revisan 34 comprobaciones concretas ligadas a criterios A y AA de WCAG 2.2, incluidos
+   los criterios nuevos de la versión 2.2. La revisión se incluye en el plan descargable
 4. Verificación
 5. Cierre y resumen
 
@@ -144,7 +148,7 @@ Son cuentas ficticias. **Todas usan la contraseña de la variable de entorno
 | Rol | Correo | Perfil de preferencias |
 | :--- | :--- | :--- |
 | Administrador | `admin@demo.example` | Panel de control global |
-| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente (pasos 1 y 2) |
+| Docente | `docente@demo.example` | Grupos y seguimiento, y la ruta docente (pasos 1 a 3) |
 | Estudiante | `alumno@demo.example` | Prefiere audio y ritmo lento |
 | Estudiante | `roberto@demo.example` | Texto grande y alto contraste |
 | Estudiante | `maria@demo.example` | Densidad reducida, sin audio |

@@ -31,6 +31,9 @@ COLUMNAS_NUEVAS = {
         ('aviso_version', 'VARCHAR(30)'),
         ('consiente_investigacion', 'BOOLEAN NOT NULL DEFAULT 0'),
     ],
+    'unidades_plan': [
+        ('adaptacion_json', 'TEXT'),
+    ],
 }
 
 
