@@ -59,6 +59,11 @@ def test_avance_cuenta_por_estado():
     assert avance({})['total'] == 0
 
 
+def test_material_retirado_del_catalogo_se_ignora():
+    a = {'materiales': ['retirado', 'audio'], 'estados': {}}
+    assert avance(a)['total'] == 3 and [m for m, _ in detalle(a)] == ['Audios y pódcast']
+
+
 def test_detalle_usa_etiquetas_legibles():
     out = detalle({'materiales': ['audio'], 'estados': {'aud_transcripcion': 'pendiente'}})
     assert out[0][0] == 'Audios y pódcast'
@@ -125,6 +130,14 @@ def test_cambiar_materiales_vuelve_a_la_unidad_y_borra_revision_de_los_quitados(
     assert r.status_code == 302 and r.headers['Location'].endswith(ruta)
     with app.app_context():
         assert db.session.get(UnidadPlan, uid).adaptacion == {'materiales': ['video'], 'estados': {}}
+
+
+def test_unidad_con_material_retirado_no_falla(client, app):
+    entrar(client)
+    cid = curso_con_diagnostico(app)
+    uid = unidad(app, cid, adaptacion={'materiales': ['retirado', 'video'], 'estados': {}})
+    assert client.get(f'/ruta-docente/curso/{cid}/adaptacion').status_code == 200
+    assert client.get(f'/ruta-docente/curso/{cid}/adaptacion/unidad/{uid}').status_code == 200
 
 
 def test_sin_materiales_no_muestra_comprobaciones(client, app):

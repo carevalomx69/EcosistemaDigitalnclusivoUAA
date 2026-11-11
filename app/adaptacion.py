@@ -197,12 +197,17 @@ def limpiar(materiales, estados):
     return {'materiales': materiales, 'estados': limpio}
 
 
+def _materiales_validos(adaptacion):
+    """Materiales guardados que siguen existiendo en el catálogo."""
+    return [mid for mid in adaptacion.get('materiales', []) if mid in POR_ID]
+
+
 def avance(adaptacion):
     """Conteo por estado sobre las comprobaciones de los materiales elegidos.
     «Atendidas» son las que se cumplen o no aplican."""
     conteo = {'total': 0, 'cumple': 0, 'pendiente': 0, 'no_aplica': 0, 'sin_revisar': 0}
     estados = adaptacion.get('estados', {})
-    for mid in adaptacion.get('materiales', []):
+    for mid in _materiales_validos(adaptacion):
         for c in POR_ID[mid]['comprobaciones']:
             conteo['total'] += 1
             conteo[estados.get(c[0], 'sin_revisar')] += 1
@@ -214,7 +219,7 @@ def detalle(adaptacion):
     """Estructura legible para exportar: por material, lista de (criterio, nombre, nivel, qué revisar, estado)."""
     estados = adaptacion.get('estados', {})
     salida = []
-    for mid in adaptacion.get('materiales', []):
+    for mid in _materiales_validos(adaptacion):
         m = POR_ID[mid]
         filas = [(c[1], c[2], c[3], c[4], ETIQUETA_ESTADO[estados.get(c[0], 'sin_revisar')])
                  for c in m['comprobaciones']]

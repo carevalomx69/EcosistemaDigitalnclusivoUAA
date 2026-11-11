@@ -34,7 +34,7 @@
           {% if a %}
             {% set n = avance(a) %}
             {% if a.materiales %}
-            <span class="texto-sutil">{% for mid in a.materiales %}{{ por_id[mid].nombre }}{% if not loop.last %} · {% endif %}{% endfor %}</span><br>
+            <span class="texto-sutil">{% for mid in a.materiales if mid in por_id %}{{ por_id[mid].nombre }}{% if not loop.last %} · {% endif %}{% endfor %}</span><br>
             {% endif %}
             <span class="badge {% if n.total and n.atendidas == n.total %}badge-azul{% else %}badge-oro{% endif %}">
               {{ n.atendidas }} de {{ n.total }} comprobaciones atendidas
