@@ -33,6 +33,7 @@ COLUMNAS_NUEVAS = {
     ],
     'unidades_plan': [
         ('adaptacion_json', 'TEXT'),
+        ('verificacion_json', 'TEXT'),
     ],
 }
 

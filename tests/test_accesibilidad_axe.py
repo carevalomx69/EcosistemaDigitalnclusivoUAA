@@ -32,7 +32,8 @@ PRIVADAS = ['/', '/modulo', '/modulo?seccion=2', '/panel/docente', '/perfil', '/
             '/ruta-docente/', '/ruta-docente/curso/nuevo',
             '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado',
             '/ruta-docente/curso/1/plan', '/ruta-docente/curso/1/plan/unidad/1',
-            '/ruta-docente/curso/1/adaptacion', '/ruta-docente/curso/1/adaptacion/unidad/1']
+            '/ruta-docente/curso/1/adaptacion', '/ruta-docente/curso/1/adaptacion/unidad/1',
+            '/ruta-docente/curso/1/verificacion', '/ruta-docente/curso/1/verificacion/unidad/1']
 
 
 @pytest.fixture(scope='module')
@@ -63,7 +64,11 @@ def servidor(tmp_path_factory):
         db.session.add(curso)
         db.session.flush()
         db.session.add(UnidadPlan(curso_id=curso.id, orden=1, nombre='Unidad de prueba',
-                                  decisiones_json=json.dumps({'rep_formatos': ['texto']})))
+                                  decisiones_json=json.dumps({'rep_formatos': ['texto']}),
+                                  adaptacion_json=json.dumps({'materiales': ['documento'], 'estados': {
+                                      'doc_titulos': 'cumple', 'doc_alt': 'cumple', 'doc_enlaces': 'pendiente'}}),
+                                  verificacion_json=json.dumps({'doc_alt': {
+                                      'metodo': 'lector', 'resultado': 'hallazgo', 'nota': 'Falta en una imagen'}})))
         db.session.commit()
     srv = make_server('127.0.0.1', 0, app, threaded=True)
     hilo = threading.Thread(target=srv.serve_forever, daemon=True)
