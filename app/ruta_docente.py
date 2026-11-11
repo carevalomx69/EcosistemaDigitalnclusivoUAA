@@ -7,7 +7,7 @@ Pasos de la ruta:
   2. Planeación con DUA         (implementado)
   3. Creación o adaptación con criterios WCAG 2.2 (implementado)
   4. Verificación               (implementado)
-  5. Cierre y resumen           (próximamente)
+  5. Cierre y resumen           (implementado)
 """
 import json
 from datetime import datetime
@@ -20,7 +20,7 @@ from app import db
 from app.diagnostico import (OPCIONES, PRINCIPIOS, VALORES_VALIDOS, evaluar, faltantes)
 from app.forms import FormCurso, FormUnidad, FormVacio
 from app.models import CursoDocente, UnidadPlan
-from app import adaptacion, plan_export, planeacion, verificacion
+from app import adaptacion, cierre, plan_export, planeacion, verificacion
 
 ruta = Blueprint('ruta_docente', __name__, url_prefix='/ruta-docente')
 
@@ -29,7 +29,7 @@ PASOS = (
     {'num': 2, 'titulo': 'Planeación con DUA', 'disponible': True},
     {'num': 3, 'titulo': 'Creación o adaptación con WCAG 2.2', 'disponible': True},
     {'num': 4, 'titulo': 'Verificación', 'disponible': True},
-    {'num': 5, 'titulo': 'Cierre y resumen', 'disponible': False},
+    {'num': 5, 'titulo': 'Cierre y resumen', 'disponible': True},
 )
 
 
@@ -93,6 +93,9 @@ def diagnostico(curso_id):
                       if request.form.get(k) in VALORES_VALIDOS}
         sin_responder = faltantes(respuestas)
         if not sin_responder:
+            # Se conserva el primer diagnóstico para compararlo en el cierre (paso 5)
+            if not curso.diagnostico_inicial_json:
+                curso.diagnostico_inicial_json = curso.diagnostico_json or json.dumps(respuestas)
             curso.diagnostico_json = json.dumps(respuestas)
             curso.diagnostico_fecha = datetime.utcnow()
             db.session.commit()
@@ -313,3 +316,23 @@ def verificacion_unidad(curso_id, unidad_id):
                            etiqueta_metodo=verificacion.ETIQUETA_METODO, max_nota=verificacion.MAX_NOTA,
                            avance=verificacion.avance(u.adaptacion, u.verificacion),
                            avance_paso3=adaptacion.avance(u.adaptacion))
+
+
+# ── PASO 5: CIERRE Y RESUMEN ───────────────────────────────────────────────
+@ruta.route('/curso/<int:curso_id>/cierre', methods=['GET', 'POST'])
+@solo_docentes
+def cierre_curso(curso_id):
+    curso = _curso_propio_o_404(curso_id)
+    falta = _requiere_diagnostico(curso)
+    if falta:
+        return falta
+    form = FormVacio()
+    if form.validate_on_submit():
+        curso.cierre_json = json.dumps(cierre.limpiar(request.form))
+        curso.cierre_fecha = datetime.utcnow()
+        db.session.commit()
+        flash('Cierre guardado. Completaste la ruta docente para este curso.', 'success')
+        return redirect(url_for('ruta_docente.cierre_curso', curso_id=curso.id))
+    return render_template('ruta_docente/cierre.html', curso=curso, pasos=PASOS, form=form,
+                           r=cierre.resumen(curso), preguntas=cierre.PREGUNTAS,
+                           reflexion=curso.reflexion, maximo=cierre.MAX_RESPUESTA)

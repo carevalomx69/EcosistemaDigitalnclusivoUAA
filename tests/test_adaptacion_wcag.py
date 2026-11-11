@@ -184,7 +184,7 @@ def test_paso_3_aparece_disponible_y_enlazado(client, app):
     cid = curso_con_diagnostico(app)
     unidad(app, cid)
     html = client.get('/ruta-docente/').get_data(as_text=True)
-    assert 'Por ahora están disponibles los pasos 1 a' in html
+    assert 'Los cinco pasos están disponibles' in html
     assert f'/ruta-docente/curso/{cid}/adaptacion' in html
     html = client.get(f'/ruta-docente/curso/{cid}/plan').get_data(as_text=True)
     assert 'Siguiente: Creación o adaptación con WCAG 2.2' in html

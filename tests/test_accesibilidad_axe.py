@@ -33,7 +33,8 @@ PRIVADAS = ['/', '/modulo', '/modulo?seccion=2', '/panel/docente', '/perfil', '/
             '/ruta-docente/curso/1/diagnostico', '/ruta-docente/curso/1/resultado',
             '/ruta-docente/curso/1/plan', '/ruta-docente/curso/1/plan/unidad/1',
             '/ruta-docente/curso/1/adaptacion', '/ruta-docente/curso/1/adaptacion/unidad/1',
-            '/ruta-docente/curso/1/verificacion', '/ruta-docente/curso/1/verificacion/unidad/1']
+            '/ruta-docente/curso/1/verificacion', '/ruta-docente/curso/1/verificacion/unidad/1',
+            '/ruta-docente/curso/1/cierre']
 
 
 @pytest.fixture(scope='module')
@@ -60,7 +61,10 @@ def servidor(tmp_path_factory):
         respuestas = {i: ('si' if n % 2 else 'parcial') for n, i in enumerate(IDS_ITEMS)}
         respuestas[IDS_ITEMS[0]] = 'no_se'
         curso = CursoDocente(docente_id=u.id, nombre='Curso de prueba',
-                             diagnostico_json=json.dumps(respuestas))
+                             diagnostico_json=json.dumps(respuestas),
+                             diagnostico_inicial_json=json.dumps({i: 'no' for i in IDS_ITEMS}),
+                             cierre_json=json.dumps({'logros': 'Subtítulos en todos los videos'}),
+                             cierre_fecha=datetime.utcnow())
         db.session.add(curso)
         db.session.flush()
         db.session.add(UnidadPlan(curso_id=curso.id, orden=1, nombre='Unidad de prueba',

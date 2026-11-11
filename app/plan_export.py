@@ -14,7 +14,7 @@ from docx import Document
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
-from app import adaptacion, verificacion
+from app import adaptacion, cierre, verificacion
 from app.diagnostico import evaluar
 from app.planeacion import etiquetas_elegidas, decisiones_tomadas, TOTAL_DECISIONES
 
@@ -61,6 +61,38 @@ def construir(curso):
         'observaciones': curso.observaciones,
         'resultado': resultado,
         'unidades': unidades,
+        'cierre': _cierre(curso),
+    }
+
+
+def _cierre(curso):
+    """Sección de cierre (paso 5): solo si la persona docente ya guardó el cierre."""
+    if not curso.cierre_fecha:
+        return None
+    r = cierre.resumen(curso)
+    a, v = r['adaptacion'], r['verificacion']
+    recorrido = [
+        'Diagnóstico: ' + '; '.join(f"{p['nombre']} {p['porcentaje']} %" for p in r['diagnostico']['principios']) + '.',
+        f"Planeación con DUA: {r['unidades']} unidad(es) y {r['decisiones']['tomadas']} de "
+        f"{r['decisiones']['total']} decisiones tomadas.",
+        f"Adaptación con WCAG 2.2: {a['atendidas']} de {a['total']} comprobaciones atendidas "
+        f"({a['pendiente']} por adaptar y {a['sin_revisar']} sin revisar).",
+        f"Verificación: {v['confirmadas'] + v['hallazgos']} de {v['total']} comprobaciones verificadas "
+        f"({v['confirmadas']} se confirman y {v['hallazgos']} con problema).",
+    ]
+    comparacion = [f"{c['nombre']}: {c['antes']} % → {c['despues']} % ({c['cambio']:+d} puntos)"
+                   for c in r['comparacion'] or []]
+    pendientes = [f'{unidad} · {criterio} {nombre}: {que}' + (f' Nota: {nota}' if nota else '')
+                  for unidad, (criterio, nombre, que, nota) in r['hallazgos']]
+    reflexion = curso.reflexion
+    return {
+        'fecha': curso.cierre_fecha.strftime('%d/%m/%Y'),
+        'recorrido': recorrido,
+        'lista': [f"{'Hecho' if hecho else 'Pendiente'}: {texto}" for texto, hecho in r['lista']],
+        'comparacion': comparacion,
+        'pendientes': pendientes,
+        'reflexion': [(pregunta, reflexion.get(pid)) for pid, pregunta, _ayuda in cierre.PREGUNTAS
+                      if reflexion.get(pid)],
     }
 
 
@@ -125,6 +157,22 @@ def a_markdown(curso):
                 L.append('')
         if u['notas']:
             L += ['Notas:', '', u['notas'], '']
+    c = d['cierre']
+    if c:
+        L += ['## Cierre y resumen', '', f"Fecha de cierre: {c['fecha']}", '', '### Resumen del recorrido', '']
+        L += [f'- {x}' for x in c['recorrido']] + ['', '### Lista para cerrar', '']
+        L += [f'- {x}' for x in c['lista']] + ['']
+        if c['comparacion']:
+            L += ['### Diagnóstico: antes y después', '']
+            L += [f'- {x}' for x in c['comparacion']] + ['']
+        if c['pendientes']:
+            L += ['### Problemas pendientes de corregir', '']
+            L += [f'- {x}' for x in c['pendientes']] + ['']
+        L += ['### Reflexión', '']
+        for pregunta, respuesta in c['reflexion']:
+            L += [f'**{pregunta}**', '', respuesta, '']
+        if not c['reflexion']:
+            L += ['Sin reflexión registrada.', '']
     L += ['---', AVISO, '']
     return '\n'.join(L)
 
@@ -200,6 +248,25 @@ def a_docx(curso):
         if u['notas']:
             doc.add_paragraph('Notas:')
             doc.add_paragraph(u['notas'])
+
+    c = d['cierre']
+    if c:
+        doc.add_heading('Cierre y resumen', level=1)
+        doc.add_paragraph(f"Fecha de cierre: {c['fecha']}")
+        secciones = [('Resumen del recorrido', c['recorrido']), ('Lista para cerrar', c['lista']),
+                     ('Diagnóstico: antes y después', c['comparacion']),
+                     ('Problemas pendientes de corregir', c['pendientes'])]
+        for titulo, lineas in secciones:
+            if lineas:
+                doc.add_heading(titulo, level=2)
+                for x in lineas:
+                    doc.add_paragraph(x, style='List Bullet')
+        doc.add_heading('Reflexión', level=2)
+        for pregunta, respuesta in c['reflexion']:
+            doc.add_heading(pregunta, level=3)
+            doc.add_paragraph(respuesta)
+        if not c['reflexion']:
+            doc.add_paragraph('Sin reflexión registrada.')
 
     doc.add_paragraph(AVISO)
     buffer = io.BytesIO()

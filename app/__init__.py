@@ -31,6 +31,11 @@ COLUMNAS_NUEVAS = {
         ('aviso_version', 'VARCHAR(30)'),
         ('consiente_investigacion', 'BOOLEAN NOT NULL DEFAULT 0'),
     ],
+    'cursos_docente': [
+        ('diagnostico_inicial_json', 'TEXT'),
+        ('cierre_json', 'TEXT'),
+        ('cierre_fecha', 'TIMESTAMP'),
+    ],
     'unidades_plan': [
         ('adaptacion_json', 'TEXT'),
         ('verificacion_json', 'TEXT'),
