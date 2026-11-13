@@ -1,0 +1,38 @@
+# Despliegue en la instancia Oracle, detrás del Nginx compartido (puerto 80),
+# bajo la subruta /ecosistema/. Ver docs/DESPLIEGUE_ORACLE.md.
+#
+# Uso (desde la carpeta del repo en el servidor, con un archivo .env junto a este):
+#   docker compose -f docker-compose.oracle.yml up -d --build
+#
+# NUNCA ejecutar "down -v": borra el volumen con la base de datos.
+services:
+  ecosistema_web:
+    build: .
+    container_name: ecosistema_web
+    restart: unless-stopped
+    # Sin "ports": solo el Nginx, dentro de la red de Docker, llega a este contenedor.
+    # Por eso es seguro confiar en los encabezados X-Forwarded-* (TRUST_PROXY=1).
+    environment:
+      APP_ENV: production
+      TRUST_PROXY: "1"
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}   # 0 mientras el acceso sea por HTTP; quitar al tener HTTPS
+      SECRET_KEY: ${SECRET_KEY:?Define SECRET_KEY en .env}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?Define DEMO_PASSWORD en .env}
+      AVISO_RESPONSABLE: ${AVISO_RESPONSABLE:-}
+      AVISO_CONTACTO: ${AVISO_CONTACTO:-}
+      AVISO_ALOJAMIENTO: ${AVISO_ALOJAMIENTO:-}
+      AVISO_CONSERVACION: ${AVISO_CONSERVACION:-}
+      AVISO_BORRADOR: ${AVISO_BORRADOR:-1}
+    volumes:
+      - ecosistema-data:/app/instance
+    networks:
+      - mi_red
+
+volumes:
+  ecosistema-data:
+
+networks:
+  mi_red:
+    # La misma red que usa listas_nginx para llegar al simulador
+    external: true
+    name: simuladorfinanciero_mi_red
