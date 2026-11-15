@@ -244,7 +244,7 @@
           <video controls width="100%" style="border-radius:var(--radio);max-height:400px;"
                  aria-label="Video educativo: Introducción al ecosistema digital educativo inclusivo. Subtítulos disponibles.">
             <source src="#" type="video/mp4">
-            <track kind="subtitles" srclang="es" src="/static/subtitulos/intro.vtt"
+            <track kind="subtitles" srclang="es" src="{{ url_for('static', filename='subtitulos/intro.vtt') }}"
                    label="Español" default>
             Tu navegador no admite video HTML5.
             <a href="#">Descarga el video MP4</a>
@@ -264,12 +264,12 @@
             Infografía: Los tres pilares del modelo
           </h2>
           <!-- WCAG 1.1.1: Texto alternativo detallado -->
-          <img src="/static/img/placeholder-infografia.svg"
+          <img src="{{ url_for('static', filename='img/placeholder-infografia.svg') }}"
                alt="Diagrama de tres círculos que se intersectan. El círculo izquierdo representa el DUA v3.0 (pilar pedagógico) con sus tres principios: representación, acción/expresión e implicación. El círculo derecho representa WCAG 2.2 (pilar técnico) con los principios POUR: perceptible, operable, comprensible y robusto. El círculo inferior representa la teoría ecológica de Bronfenbrenner (pilar sistémico) con los cuatro sistemas: micro, meso, exo y macrosistema. En la intersección de los tres círculos aparece el texto: Ecosistema Digital Educativo Inclusivo para ES Mexicana."
                style="max-width:100%;border-radius:var(--radio);border:1px solid var(--borde-sutil);"
                width="700" height="500">
           <p class="texto-sutil mt-sm">
-            <a href="/static/img/placeholder-infografia.svg" download>
+            <a href="{{ url_for('static', filename='img/placeholder-infografia.svg') }}" download>
               Descargar infografía en formato SVG
             </a>
           </p>

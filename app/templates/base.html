@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Ecosistema Digital Educativo Inclusivo — Universidad Autónoma de Aguascalientes">
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="url-preferencias" content="{{ url_for('main.guardar_preferencias') }}">
   <title>{% block titulo %}Ecosistema Educativo Inclusivo — UAA{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% block estilos_extra %}{% endblock %}

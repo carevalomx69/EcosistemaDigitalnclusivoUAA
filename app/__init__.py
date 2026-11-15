@@ -82,13 +82,25 @@ def create_app(config=None):
     # solicitudes entre sitios y, en producción, solo por HTTPS.
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-    app.config['SESSION_COOKIE_SECURE'] = en_produccion
+    # Por defecto, cookies Secure solo en producción. Un piloto servido por HTTP
+    # (sin dominio ni certificado) debe definir COOKIE_SECURE=0; de lo contrario
+    # el navegador descarta la cookie y el inicio de sesión no funciona.
+    usar_https = en_produccion and os.environ.get('COOKIE_SECURE', '1') != '0'
+    app.config['SESSION_COOKIE_SECURE'] = usar_https
     app.config['REMEMBER_COOKIE_HTTPONLY'] = True
     app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
-    app.config['REMEMBER_COOKIE_SECURE'] = en_produccion
+    app.config['REMEMBER_COOKIE_SECURE'] = usar_https
+    # TRUST_PROXY=1: la app está detrás de un proxy inverso (Nginx) que envía
+    # X-Forwarded-* y, si hay subruta, X-Forwarded-Prefix (p. ej. /ecosistema).
+    # Activar SOLO si el puerto de la app no es accesible directamente desde fuera.
+    app.config['TRUST_PROXY'] = os.environ.get('TRUST_PROXY') == '1'
 
     if config:
         app.config.update(config)
+
+    if app.config['TRUST_PROXY']:
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # Inicializar extensiones
     db.init_app(app)
@@ -108,7 +120,7 @@ def create_app(config=None):
         respuesta.headers.setdefault('X-Content-Type-Options', 'nosniff')
         respuesta.headers.setdefault('X-Frame-Options', 'DENY')
         respuesta.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
-        if en_produccion:
+        if app.config['SESSION_COOKIE_SECURE']:
             respuesta.headers.setdefault(
                 'Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
         return respuesta

@@ -93,8 +93,10 @@ function reducirTexto() {
  */
 function guardarPreferencia(cambio) {
   var meta = document.querySelector('meta[name="csrf-token"]');
-  if (!meta || !window.fetch) { return; }
-  fetch('/preferencias', {
+  var metaUrl = document.querySelector('meta[name="url-preferencias"]');
+  if (!meta || !metaUrl || !window.fetch) { return; }
+  // La URL la genera el servidor (url_for) para respetar un prefijo como /ecosistema/
+  fetch(metaUrl.content, {
     method: 'POST',
     credentials: 'same-origin',
     headers: {
