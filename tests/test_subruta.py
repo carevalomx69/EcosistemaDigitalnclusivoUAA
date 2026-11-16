@@ -73,3 +73,28 @@ def test_cookie_secure_configurable_en_produccion(monkeypatch):
     por_http = create_app(cfg)
     assert por_http.config['SESSION_COOKIE_SECURE'] is False
     assert 'Strict-Transport-Security' not in por_http.test_client().get('/login').headers
+
+
+def test_aviso_pendiente_conserva_el_prefijo_al_volver(app_proxy):
+    """Quien inicia sesión sin haber aceptado el aviso es enviado a aceptarlo y,
+    después, de vuelta a la página que quería. Ese destino debe incluir el prefijo."""
+    from app import db
+    from app.models import Usuario
+    with app_proxy.app_context():
+        u = Usuario(nombre='Admin', apellidos='Prueba', correo='sin-aviso@demo.example', rol='admin')
+        u.establecer_contrasena('clave-de-prueba-1')
+        db.session.add(u)
+        db.session.commit()
+
+    cliente = app_proxy.test_client()
+    html = cliente.get('/login', headers=PREFIJO).get_data(as_text=True)
+    token = re.search(r'name="csrf_token"[^>]*value="([^"]+)"', html).group(1)
+    r = cliente.post('/login', headers=PREFIJO, data={
+        'csrf_token': token, 'correo': 'sin-aviso@demo.example', 'contrasena': 'clave-de-prueba-1'})
+    assert r.status_code == 302
+
+    r = cliente.get('/panel/admin', headers=PREFIJO)
+    assert r.status_code == 302
+    destino = r.headers['Location']
+    assert '/ecosistema/aviso/aceptar' in destino
+    assert 'next=/ecosistema/panel/admin' in destino

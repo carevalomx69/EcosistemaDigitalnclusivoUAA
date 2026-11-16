@@ -41,7 +41,8 @@ def exigir_aviso_aceptado():
         return None
     if request.endpoint in RUTAS_SIN_AVISO or aviso_al_dia(current_user):
         return None
-    destino = request.path if request.method == 'GET' else None
+    # script_root conserva el prefijo de la subruta (p. ej. /ecosistema) cuando hay proxy
+    destino = (request.script_root + request.path) if request.method == 'GET' else None
     return redirect(url_for('main.aviso_aceptar', next=destino))
 
 
